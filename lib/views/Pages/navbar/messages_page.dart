@@ -43,6 +43,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       //checkForDeletedConversation();
+      print("ye to chla mate hai ye mate");
       getMessages();
     });
   }
@@ -54,9 +55,11 @@ class _MessagesPageState extends State<MessagesPage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back),
-        title: const Text("Messages",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: const Text("Messages",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        ),
       ),
       body: Column(
         children: [
@@ -96,16 +99,16 @@ class _MessagesPageState extends State<MessagesPage> {
                                   .push(MaterialPageRoute(
                                       builder: (builder) =>
                                           IndividualLoadedChat(
-                                              username: listFromDB[index]
-                                                  ["name"],
-                                              OtherUserId: listFromDB[index]
-                                                  ["sentTo"],
-                                              myUsername: widget.myUsername,
-                                              myId: user!.id,
-                                              profilePic: listFromDB[index]
-                                                  ["userProfile"],
-                                              isBot: listFromDB[index]
-                                                  ["isBot"])))
+                                            username: listFromDB[index]["name"],
+                                            OtherUserId: listFromDB[index]
+                                                ["sentTo"],
+                                            myId: user!.id,
+                                            profilePic: listFromDB[index]
+                                                ["userProfile"],
+                                            isBot: listFromDB[index]["isBot"],
+                                            token: user!.fcmToken,
+                                            isItcomingFromMessagePage: true,
+                                          )))
                                   .then((onValue) {
                                 if (onValue == true) {
                                   if (!mounted) return;
@@ -134,6 +137,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   void getMessages() async {
     var list = await MessagesAPI().getSentByMessages(widget.myUsername.id);
+    print("this doens work?  $list");
     if (!mounted) return;
     Provider.of<MessageListProvider>(context, listen: false).setList(list);
   }

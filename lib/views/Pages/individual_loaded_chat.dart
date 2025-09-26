@@ -10,10 +10,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:match5/Database/api/block_user_api.dart';
+import 'package:match5/Database/api/bot_status_api.dart';
 import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/notification_api.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/resize_helper.dart';
 import 'package:match5/Services/socket_service.dart';
 import 'package:match5/const.dart';
@@ -34,17 +36,20 @@ class IndividualLoadedChat extends StatefulWidget {
       {required this.username,
       required this.OtherUserId,
       required this.myId,
-      required this.myUsername,
       required this.profilePic,
       required this.isBot,
+      required this.token,
+      required this.isItcomingFromMessagePage,
       super.key});
 
   final String username;
   final String OtherUserId;
   final String myId;
-  final UserModel myUsername;
+  final bool
+      isItcomingFromMessagePage; // true if coming from message page false if coming from indiviual page;
   final String profilePic;
   final String isBot;
+  final List<dynamic> token;
 
   @override
   State<IndividualLoadedChat> createState() => _IndividualLoadedChatState();
@@ -67,6 +72,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
   //starting page is first so 1
   var page = 1;
   bool limit = false;
+  UserModel? myUserModel;
 
   @override
   void initState() {
@@ -75,7 +81,10 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     checkBlockingAtFirst();
     getConversation(page);
     print("ddddddddddd");
-    print(widget.isBot);
+
+    myUserModel = Provider.of<UserProvider>(context, listen: false).user;
+    print(
+        "profile check krenge ${widget.profilePic} and other id is ${widget.OtherUserId}  and my id is ${myUserModel!.id}");
   }
 
   @override
@@ -135,6 +144,8 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
               leading: InkWell(
                   onTap: () {
                     // alertForBack();
+                    if (!mounted) return;
+                    Navigator.of(context).pop();
                   },
                   //
                   child: Padding(
@@ -321,6 +332,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
                                           decoration: InputDecoration(
                                               suffixIcon: InkWell(
                                                   onTap: () {
+                                                    if (!mounted) return;
                                                     var now = DateTime.now();
                                                     var date = DateFormat(
                                                             'd MMMM y')
@@ -437,8 +449,16 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
       if (!botReplyOrUser) {
         print("yenhi");
         if (widget.isBot == "false" && !userStatus) {
-          NotificationAPI().notificationSend(widget.OtherUserId,
-              widget.myUsername.username, message, conversationId, imagepath);
+          NotificationAPI().notificationSend(
+              widget.OtherUserId,
+              myUserModel!.username,
+              message,
+              conversationId,
+              imagepath,
+              widget.isBot,
+              myUserModel!.userProfile,
+              widget.myId);
+          print("han bhai");
         }
 
         if (userStatus) {
@@ -456,7 +476,14 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
           "conversationId": conversationId,
           "id": widget.myId,
           "isBot": widget.isBot,
-          "limit": limit
+          "limit": limit,
+          "fcmTokens": widget.token,
+          "username": widget.username,
+          "myUsername": myUserModel!.username,
+          "profilePic": widget.profilePic,
+          "whichPage": widget.isItcomingFromMessagePage,
+          "interestedGender": myUserModel!
+              .interestedGender // true if it coming from messageapage false if its from individualpage
         });
 
         if (userStatus) {
@@ -493,6 +520,9 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         }
       } else {
         print("in bot era");
+        var statusChange = await BotStatusApi()
+            .changeBotStatus(myUserModel!.id, widget.OtherUserId, "online");
+
         if (userStatus) {
           limit = await MessagesAPI().updateConversation(
               message,
@@ -531,6 +561,9 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
   void setMessage(
       String s, String msg, String time, String imagepath, String status) {
     print(imagepath);
+
+    Provider.of<MessageListProvider>(context, listen: false)
+        .updateConversation(conversationId, msg, time);
 
     MessageModel messageModel = MessageModel(
         type: s, message: msg, time: time, path: imagepath, status: status);
@@ -594,7 +627,13 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         "conversationId": conversationId,
         "id": widget.myId,
         "isBot": widget.isBot,
-        "limit": limit
+        "limit": limit,
+        "fcmTokens": widget.token,
+        "username": widget.username,
+        "myUsername": myUserModel!.username,
+        "profilePic": widget.profilePic,
+        "whichPage": widget.isItcomingFromMessagePage,
+        "interestedGender": myUserModel!.interestedGender
       });
 
       print("Caption is here" + caption);
@@ -608,8 +647,15 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
       }
 
       if (widget.isBot == "false" && !userStatus) {
-        NotificationAPI().notificationSend(widget.OtherUserId,
-            widget.myUsername.username, caption, conversationId, path);
+        NotificationAPI().notificationSend(
+            widget.OtherUserId,
+            myUserModel!.username,
+            caption,
+            conversationId,
+            path,
+            widget.isBot,
+            myUserModel!.userProfile,
+            widget.myId);
       }
 
       Navigator.of(context).pop();
@@ -660,10 +706,14 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
       }
     });
 
-    socket.emit("user_online",
-        {"peerId": widget.OtherUserId, "conversationId": conversationId});
+    socket.emit("user_online", {
+      "peerId": widget.OtherUserId,
+      "conversationId": conversationId,
+      "isBot": widget.isBot,
+      "userId": widget.myId
+    });
 
-    socket.on("user_status", (data) {
+    socket.on("user_status", (data) async {
       final status = data["status"];
       print("other user behaviour is ");
       print(status);
@@ -684,6 +734,29 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
           if (mounted) {
             setState(() {
               userStatus = false;
+            });
+          }
+        }
+      } else {
+        var lim = await MessagesAPI().getlimitInfo(conversationId);
+        if (data["status"] == "offline" || lim) {
+          for (var msg in messages) {
+            msg.status = "seen";
+          }
+          if (mounted) {
+            setState(() {
+              limit = lim;
+              userStatus = false;
+            });
+          }
+        } else {
+          for (var msg in messages) {
+            msg.status = "seen";
+          }
+          if (mounted) {
+            setState(() {
+              limit = lim;
+              userStatus = true;
             });
           }
         }
@@ -733,32 +806,34 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     }
 
 //connect function from main
-    //check for limit reached if  bot
-    if (widget.isBot == "true") {
-      var lim = await MessagesAPI().getlimitInfo(conversationId);
-      print("limit isnfo is ");
-      print(lim);
-      if (lim) {
-        if (!mounted) return;
-        setState(() {
-          limit = lim;
-          userStatus = false;
-        });
-      } else {
-        if (!mounted) return;
-        setState(() {
-          limit = lim;
-          userStatus = true;
-        });
-      }
-    }
+    //check for limit reached if  bot and userStatus of bot
+    // if (widget.isBot == "true") {
+    //   var lim = await MessagesAPI().getlimitInfo(conversationId);
+
+    //   print("limit isnfo is ");
+    //   print(lim);
+    //   if (lim) {
+    //     if (!mounted) return;
+    //     setState(() {
+    //       limit = lim;
+    //     });
+    //   } else {
+    //     if (!mounted) return;
+    //     setState(() {
+    //       limit = lim;
+    //     });
+    //   }
+    // }
 
     connect();
   }
 
   void disconnectSocket() {
-    socket.emit("user_status",
-        {"peerId": widget.OtherUserId, "conversationId": conversationId});
+    socket.emit("user_status", {
+      "peerId": widget.OtherUserId,
+      "conversationId": conversationId,
+      "userId": widget.myId
+    });
     //socket.disconnect();
   }
 
@@ -782,6 +857,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         socket.emit("block", {
           "blockingId": widget.myId,
           "blockedId": widget.OtherUserId,
+          "isBot": widget.isBot
         });
       }
     } else if (blockCheck == "false") {
@@ -806,8 +882,11 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
           isBlocked = "false";
         });
         //socket unblocking for real time
-        socket.emit("unblock",
-            {"blockingId": widget.myId, "blockedId": widget.OtherUserId});
+        socket.emit("unblock", {
+          "blockingId": widget.myId,
+          "blockedId": widget.OtherUserId,
+          "isBot": widget.isBot
+        });
 
         //sending other user data so that it can show the blocking thing in async
         // socket.emit("block",

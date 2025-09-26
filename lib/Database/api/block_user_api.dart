@@ -65,7 +65,7 @@ class BlockUserApi {
     var response = await http.delete(url);
 
     var resData = jsonDecode(response.body);
-
+    print("block chek mae");
     print(resData);
     return resData["blockedUsers"];
   }

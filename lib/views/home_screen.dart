@@ -1,6 +1,8 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Services/notification_service.dart';
 import 'package:match5/utils/login_helper.dart';
 import 'package:match5/views/Pages/navbar/home_page.dart';
 import 'package:match5/views/Pages/navbar/messages_page.dart';
@@ -24,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     getFCMTokenDetails();
+    _checkPermissions();
     super.initState();
   }
 
@@ -87,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
       //update new token and delete prevtoken
       if (fcmToken != prevfcmToken) {
         //update and delete
-        print("D");
+        print("Dasssa tenoi");
         await OnBoardConnection()
             .updateAndDeleteFCMToken(widget.user.id, fcmToken, prevfcmToken);
       } else {
@@ -95,6 +98,27 @@ class _HomeScreenState extends State<HomeScreen> {
         //just update
         await OnBoardConnection().updateFCM(widget.user.id, fcmToken);
       }
+    }
+  }
+
+  void _checkPermissions() async {
+    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    switch (settings.authorizationStatus) {
+      case AuthorizationStatus.authorized:
+        print("Authorization already granted");
+        break;
+      case AuthorizationStatus.denied:
+        print("❌ Notifications denied");
+        await NotificationService.askForPermissions();
+        break;
+      case AuthorizationStatus.notDetermined:
+        print("🤔 Permission not asked yet");
+        await NotificationService.askForPermissions();
+        break;
+      case AuthorizationStatus.provisional:
+        print("⚠️ Provisional permission granted (iOS only)");
+        await NotificationService.askForPermissions();
+        break;
     }
   }
 }

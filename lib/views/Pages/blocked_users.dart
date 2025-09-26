@@ -52,7 +52,7 @@ class _BlockedUsersState extends State<BlockedUsers> {
                           itemBuilder: (BuildContext context) => [
                                 PopupMenuItem(
                                     onTap: () {
-                                      unblockPerson();
+                                      unblockPerson(index);
                                     },
                                     child: Text("Unblock"))
                               ]),
@@ -72,10 +72,11 @@ class _BlockedUsersState extends State<BlockedUsers> {
     });
   }
 
-  Future<void> unblockPerson() async {
+  Future<void> unblockPerson(index) async {
     var list = await BlockUserApi().deleteBlockEntry(widget.id);
+    if (!mounted) return;
     setState(() {
-      listBlocked = list;
+      listBlocked.removeAt(index);
     });
   }
 }

@@ -170,8 +170,11 @@ class _EditProfileState extends State<EditProfile> {
                         TextButton(
                           onPressed: () async {
                             //print(textEditingController.text);
-                            if (widget.user!.username !=
-                                    textEditingController.text ||
+                            if ((widget.user!.username !=
+                                        textEditingController.text &&
+                                    textEditingController.text
+                                        .trim()
+                                        .isNotEmpty) ||
                                 widget.user!.gender != genderValue ||
                                 widget.user!.interestedGender !=
                                     interestedGenderValue ||
@@ -201,7 +204,14 @@ class _EditProfileState extends State<EditProfile> {
 
                                 Navigator.of(context).pop();
                               }
-                            } else {}
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Please add correct details"),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
                           },
                           style: TextButton.styleFrom(
                             backgroundColor: Colors.blue, // Background color

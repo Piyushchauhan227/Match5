@@ -1,16 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:math';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:match5/Database/api/bot_status_api.dart';
 import 'package:match5/Database/api/bot_user_api.dart';
 import 'package:match5/Database/api/messages_api.dart';
-import 'package:match5/Database/api/notification_api.dart';
-import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/const.dart';
@@ -22,9 +19,8 @@ import 'package:match5/utils/reply_message.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:match5/utils/reply_with_image.dart';
 import 'package:match5/views/Pages/connect_screen.dart';
-import 'package:match5/views/Pages/image_view.dart';
-import 'package:http/http.dart' as http;
 import 'package:match5/views/Pages/individual_loaded_chat.dart';
+import 'package:match5/views/Pages/wallet_page.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'package:match5/Provider/user_provider.dart';
@@ -77,8 +73,10 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   bool didYouMatchedFirst = false;
   Timer? chatWaitTimer;
   Timer? counterTimer;
-  var timeLeft = 5;
+  var timeLeft = 10;
   bool timerStart = false;
+  bool alreadyPoppedNoNeedForMatchResult = false;
+  bool showBuyMoreFireinMatchPrompt = false;
 
   @override
   void initState() {
@@ -89,7 +87,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     userModel = Provider.of<UserProvider>(context, listen: false).user;
 
     final shuffled = [...softQuestions]..shuffle(Random());
-    randomShuffled = shuffled.take(5).toList();
+    randomShuffled = shuffled.take(10).toList();
     connect();
 
     widget.socket.onConnect((_) {
@@ -123,6 +121,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    var userForFires = Provider.of<UserProvider>(context, listen: true).user;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -194,7 +194,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                       Text(
                         '$timeLeft',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -295,13 +295,13 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                       AnimatedContainer(
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeOut,
-                        height: showPrompts ? 150 : 300,
+                        height: showPrompts ? 300 : 600,
                         decoration: BoxDecoration(
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(10)),
                         ),
                         child: ListView.builder(
-                            itemCount: 5,
+                            itemCount: 10,
                             itemBuilder: (context, index) {
                               return GestureDetector(
                                 onTap: () {
@@ -340,8 +340,10 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                         Icon(Icons.question_answer, color: Colors.blue),
                         SizedBox(width: 8),
                         Text(
-                          "Your partner is picking a question...",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          "Other user is typing....",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic),
                         ),
                       ],
                     ),
@@ -352,7 +354,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                     child: Container(
                       width: MediaQuery.of(context).size.width,
                       child: Card(
-                        color: Color.fromRGBO(247, 247, 255, 100),
+                        color: Color.fromRGBO(227, 247, 255, 100),
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
@@ -391,6 +393,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                                   decoration: InputDecoration(
                                       suffixIcon: InkWell(
                                           onTap: () {
+                                            if (!mounted) return;
                                             setState(() {
                                               firstTimeAnswer = false;
                                               answerTurn = false;
@@ -474,99 +477,195 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                     alignment: Alignment.center,
                     child: Center(
                       child: Container(
-                        height: double.infinity,
-                        width: double.infinity,
                         decoration:
                             BoxDecoration(color: Color.fromARGB(50, 0, 0, 0)),
                         child: Center(
-                            child: Container(
-                          height: 180,
-                          width: 250,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  height: 8,
-                                ),
-                                Image.asset(
-                                  "assets/heart_sign.png",
-                                  height: 35,
-                                  width: 35,
-                                ),
-                                Text(
-                                  "Match?",
-                                  style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  height: 16,
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        if (decisionTimeForBot) {
-                                          widget.socket.emit(
-                                              "decision_answer", {
-                                            "userId": widget.myId,
-                                            "answer": "yes",
-                                            "bot": true
-                                          });
-                                        } else {
-                                          widget.socket.emit(
-                                              "decision_answer", {
-                                            "userId": widget.myId,
-                                            "answer": "yes",
-                                            "bot": false
-                                          });
-                                        }
+                            child: IntrinsicWidth(
+                          child: Container(
+                            // height: 250,
+                            // width: 260,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  Image.asset(
+                                    "assets/heart_sign.png",
+                                    height: 35,
+                                    width: 35,
+                                  ),
+                                  Text(
+                                    "Match?",
+                                    style: TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(
+                                    height: 16,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          var userFire = userForFires.coins;
 
-                                        setState(() {
-                                          decisionTime = false;
-                                          decisionTimeForBot = false;
-                                        });
-                                        alertForMatchYes();
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            color: Colors.green,
-                                            borderRadius:
-                                                BorderRadius.circular(20)),
-                                        height: 40,
-                                        width: 100,
-                                        child: Icon(
-                                          Icons.thumb_up,
-                                          color: Colors.white,
-                                        ),
+                                          if (userFire > 0) {
+                                            Provider.of<UserProvider>(context,
+                                                    listen: false)
+                                                .decreaseFires();
+
+                                            if (decisionTimeForBot) {
+                                              widget.socket
+                                                  .emit("decision_answer", {
+                                                "userId": widget.myId,
+                                                "answer": "yes",
+                                                "bot": true,
+                                                "conversationId": conversationId
+                                              });
+                                            } else {
+                                              widget.socket
+                                                  .emit("decision_answer", {
+                                                "userId": widget.myId,
+                                                "answer": "yes",
+                                                "bot": false,
+                                                "conversationId": conversationId
+                                              });
+                                            }
+
+                                            setState(() {
+                                              decisionTime = false;
+                                              decisionTimeForBot = false;
+                                            });
+                                            alertForMatchYes();
+                                          } else {
+                                            if (!mounted) return;
+                                            setState(() {
+                                              showBuyMoreFireinMatchPrompt =
+                                                  true;
+                                            });
+                                          }
+                                        },
+                                        child: Container(
+                                            decoration: BoxDecoration(
+                                                color: Colors.green,
+                                                borderRadius:
+                                                    BorderRadius.circular(20)),
+                                            height: 40,
+                                            width: 100,
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.thumb_up,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(
+                                                  width: 8,
+                                                ),
+                                                Text(
+                                                  "(${userForFires!.coins.toString()})",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              ],
+                                            )),
                                       ),
+                                      SizedBox(
+                                        width: 8,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          alertOnDecisionNo();
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          height: 40,
+                                          width: 100,
+                                          child: Icon(
+                                            Icons.thumb_down,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  if (showBuyMoreFireinMatchPrompt)
+                                    SizedBox(
+                                      height: 24,
                                     ),
+                                  if (showBuyMoreFireinMatchPrompt)
                                     InkWell(
                                       onTap: () {
-                                        alertOnDecisionNo();
+                                        if (!mounted) return;
+                                        Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    WalletPage()));
                                       },
                                       child: Container(
-                                        decoration: BoxDecoration(
+                                          width: 220,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                              color: Colors.yellow,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text("Want more Fires?",
+                                                  style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              SizedBox(
+                                                width: 8,
+                                              ),
+                                              Image.asset(
+                                                "assets/fire.png",
+                                                height: 20,
+                                                width: 20,
+                                              )
+                                            ],
+                                          )),
+                                    ),
+                                  if (showBuyMoreFireinMatchPrompt)
+                                    SizedBox(
+                                      height: 8,
+                                    ),
+                                  if (showBuyMoreFireinMatchPrompt)
+                                    Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Text(
+                                        "You need more Fires to match!",
+                                        style: TextStyle(
                                             color: Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(20)),
-                                        height: 40,
-                                        width: 100,
-                                        child: Icon(
-                                          Icons.thumb_down,
-                                          color: Colors.white,
-                                        ),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     )
-                                  ],
-                                )
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         )),
@@ -601,11 +700,16 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           "path": imagepath,
           "where": isItFromTextFormField,
           "isBot": widget.isBot,
-          "role": role
+          "role": role,
+          "conversationId": conversationId,
+          "peerId": widget.partnerId,
+          "fcmTokens": userModel!.fcmToken,
+          "interestedGender": userModel!.interestedGender,
+          "myId": widget.myId
         });
 
         if (messageApiCount <= 1) {
-          //first check that is the conversationId already got created by other device?
+          //first check that is the conversationId already got created by partner?
           var isConversationMade = await MessagesAPI()
               .getConversationId(widget.partnerId, widget.myId);
           if (isConversationMade == "null") {
@@ -635,6 +739,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           //no need to check just update the conversation cause we already got the conversationId here.
           MessagesAPI().updateConversation(message, time, widget.partnerId,
               widget.myId, conversationId, "seen", imagepath);
+
+          print("pehle mein ");
         }
       } else {
         //bot questions
@@ -650,7 +756,12 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           "path": imagepath,
           "where": isItFromTextFormField,
           "isBot": widget.isBot,
-          "role": role
+          "role": role,
+          "conversationId": conversationId,
+          "peerId": widget.partnerId,
+          "fcmTokens": userModel!.fcmToken,
+          "interestedGender": userModel!.interestedGender,
+          "myId": widget.myId
         });
 
         if (messageApiCount <= 1) {
@@ -675,7 +786,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                 widget.partnerId, conversationId, "seen", imagepath);
           }
         } else {
-          //no need to check just update the conversation cause we already got the conversationId here.
+          //   //no need to check just update the conversation cause we already got the conversationId here.
           MessagesAPI().updateConversation(message, time, widget.myId,
               widget.partnerId, conversationId, "seen", imagepath);
         }
@@ -780,6 +891,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
       if (data["matched"]) {
         await BotUserAPI().updateBot(widget.myId, widget.partnerId);
+        await BotStatusApi().createBotStatus(widget.myId, widget.partnerId);
+
         print("yayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy u matched");
 
         decisionTime = false;
@@ -790,18 +903,24 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (builder) => IndividualLoadedChat(
-                username: widget.username,
-                OtherUserId: widget.partnerId,
-                myId: widget.myId,
-                myUsername: userModel!,
-                profilePic: widget.profilePic,
-                isBot: widget.isBot.toString())));
+                  username: widget.username,
+                  OtherUserId: widget.partnerId,
+                  myId: widget.myId,
+                  profilePic: widget.profilePic,
+                  isBot: widget.isBot.toString(),
+                  token: userModel!.fcmToken,
+                  isItcomingFromMessagePage: false,
+                )));
       } else {
-        print("nnnnnnnnnnnnnnnnnnoooooooooooooooooooooooooooooooooooooooo");
-        //not matched this time prompt
-        deleteConversationFirst();
-        if (!mounted) return;
-        Navigator.of(context).pop();
+        if (!alreadyPoppedNoNeedForMatchResult) {
+          print("nnnnnnnnnnnnnnnnnnoooooooooooooooooooooooooooooooooooooooo");
+          //not matched this time prompt
+          deleteConversationFirst();
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text("Sorry Other user left")));
+          Navigator.of(context).pop();
+        }
       }
     });
 
@@ -868,32 +987,44 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         });
   }
 
-  void alertOnDecisionNo() {
+  void alertOnDecisionNo() async {
+    // if (!mounted) return;
+    // Widget okButton = TextButton(
+    //     onPressed: () async {
+    //       widget.socket.emit("decision_answer", {
+    //         "userId": widget.myId,
+    //         "answer": "No",
+    //         "conversationId": conversationId
+    //       });
+    //       await MessagesAPI().deleteConversation(widget.partnerId, widget.myId);
+    //       Navigator.of(context).pop();
+    //     },
+    //     child: Text("Ok"));
+
+    // Widget cancelButton = TextButton(
+    //     onPressed: () {
+    //       Navigator.of(context).pop();
+    //     },
+    //     child: Text("Cancel"));
+
+    // showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return AlertDialog(
+    //         title: Text("Do you really want to not Match?"),
+    //         actions: [okButton, cancelButton],
+    //       );
+    //     });
+    alreadyPoppedNoNeedForMatchResult = true;
+    widget.socket.emit("decision_answer", {
+      "userId": widget.myId,
+      "answer": "No",
+      "conversationId": conversationId
+    });
+    await MessagesAPI().deleteConversation(widget.partnerId, widget.myId);
     if (!mounted) return;
-    Widget okButton = TextButton(
-        onPressed: () async {
-          widget.socket
-              .emit("decision_answer", {"userId": widget.myId, "answer": "No"});
-          await MessagesAPI().deleteConversation(widget.partnerId, widget.myId);
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-        },
-        child: Text("OK"));
 
-    Widget cancelButton = TextButton(
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-        child: Text("Cancel"));
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("do you really want to not Match?"),
-            actions: [okButton, cancelButton],
-          );
-        });
+    Navigator.of(context).pop();
   }
 
   Future<void> deleteConversationFirst() async {
@@ -909,6 +1040,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   }
 
   void alertForMatchYes() {
+    showAlerts = true;
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -917,8 +1049,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
             onWillPop: () async => false,
             child: Dialog(
               child: Container(
-                  height: 300,
-                  width: 230,
+                  height: 320,
+                  width: 300,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10)),
@@ -952,12 +1084,12 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     if (mounted) {
       setState(() {
         timerStart = false;
-        timeLeft = 5;
+        timeLeft = 10;
       });
     }
     chatWaitTimer?.cancel();
     counterTimer?.cancel();
-    chatWaitTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+    chatWaitTimer = Timer.periodic(Duration(seconds: 60), (timer) {
       startTopCounter();
     });
   }
@@ -981,9 +1113,12 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         if (!mounted) return;
         if (!navigatoForwardFromTimer) {
           if (showAlerts) {
+            //delete conversation here
+            print("dddddeeelint");
             Navigator.of(context).pop();
             Navigator.of(context).pop();
           } else {
+            print(" dpooohaaaa. dddddeeelint");
             Navigator.of(context).pop();
           }
 

@@ -15,4 +15,9 @@ class UserProvider with ChangeNotifier {
     _user = user;
     notifyListeners();
   }
+
+  void decreaseFires() {
+    _user!.coins--;
+    notifyListeners();
+  }
 }

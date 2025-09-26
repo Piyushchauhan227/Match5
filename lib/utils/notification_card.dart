@@ -32,7 +32,7 @@ class _NotificationCardState extends State<NotificationCard> {
               radius: 30,
               backgroundColor: Theme.of(context).primaryColor,
               child: Image.asset(
-                "assets/login_iccon.png",
+                "assets/icon.png",
                 width: 40,
                 fit: BoxFit.cover,
               ),

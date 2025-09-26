@@ -22,7 +22,7 @@ class ReplyWithImage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
           child: Container(
-              width: 150,
+              width: 170,
               decoration: BoxDecoration(
                   color: Color.fromRGBO(225, 248, 248, 1),
                   borderRadius: BorderRadius.circular(8)),

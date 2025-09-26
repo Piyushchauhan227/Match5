@@ -18,13 +18,13 @@ class FullScreenImageView extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.white),
           elevation: 0,
           actions: [
-            IconButton(
-              onPressed: () {
-                downloadImage(context);
-              },
-              icon: Icon(Icons.download),
-              tooltip: "Download",
-            )
+            // IconButton(
+            //   onPressed: () {
+            //     downloadImage(context);
+            //   },
+            //   icon: Icon(Icons.download),
+            //   tooltip: "Download",
+            // )
           ],
         ),
         body: Center(

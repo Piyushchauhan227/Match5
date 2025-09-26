@@ -6,13 +6,13 @@ import 'package:match5/const.dart';
 
 class OnBoardConnection {
   //post signup
-  Future<LoginResult> signupInMongo(name, email) async {
+  Future<LoginResultEnd> signupInMongo(name, email) async {
     var url = Uri.parse('$BASE_URL/user/signup');
     var response = await http.post(url, body: {'name': name, 'email': email});
     var resData = jsonDecode(response.body);
     print("hi hello");
     print(resData);
-    return LoginResult(
+    return LoginResultEnd(
         result: response.statusCode,
         user: UserModel(
             id: resData["id"],
@@ -28,12 +28,12 @@ class OnBoardConnection {
   }
 
   //post method for login
-  Future<LoginResult> loginInMongo(email) async {
+  Future<LoginResultEnd> loginInMongo(email) async {
     var url = Uri.parse('$BASE_URL/user/login');
     var response = await http.post(url, body: {'email': email});
     var resData = jsonDecode(response.body);
     if (response.statusCode == 400) {
-      return LoginResult(
+      return LoginResultEnd(
           result: response.statusCode,
           user: UserModel(
               id: "",
@@ -47,7 +47,7 @@ class OnBoardConnection {
               userProfile: "",
               about: ""));
     } else {
-      return LoginResult(
+      return LoginResultEnd(
           result: response.statusCode,
           user: UserModel(
               id: resData["id"],
@@ -72,7 +72,7 @@ class OnBoardConnection {
 
       print("ethe chk km");
       print(resData);
-      return LoginResult(
+      return LoginResultEnd(
           result: response.statusCode,
           user: UserModel(
               id: resData["id"],
@@ -92,7 +92,7 @@ class OnBoardConnection {
   }
 
   //update user
-  Future<LoginResult> updateUser(
+  Future<LoginResultEnd> updateUser(
       id, gender, interestedGender, username, userProfile, about) async {
     var url = Uri.parse('$BASE_URL/user/update');
     var response = await http.patch(url, body: {
@@ -105,7 +105,7 @@ class OnBoardConnection {
     });
     var resData = jsonDecode(response.body);
     print(resData);
-    return LoginResult(
+    return LoginResultEnd(
         result: response.statusCode,
         user: UserModel(
             id: resData["id"],
@@ -131,14 +131,17 @@ class OnBoardConnection {
   }
 
   Future<void> updateFCM(id, newToken) async {
-    var url = Uri.parse("$BASE_URL/user/updateFCM");
-    print("urrrls are $id and new tokens are $newToken");
-    var response =
-        await http.patch(url, body: {"id": id, "newToken": newToken});
+    try {
+      var url = Uri.parse("$BASE_URL/user/updateFCM");
+      print("urrrls are $id and new tokens are $newToken");
+      var response =
+          await http.patch(url, body: {"id": id, "newToken": newToken});
 
-    var resData = jsonDecode(response.body);
-    print(resData);
-
+      var resData = jsonDecode(response.body);
+      print(resData);
+    } catch (e) {
+      return null;
+    }
     // resData["fcmToken"];
   }
 

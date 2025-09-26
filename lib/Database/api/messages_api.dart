@@ -70,33 +70,37 @@ class MessagesAPI {
 
   Future<List<MessageModel>> getConversationBetweenUsers(
       sentBy, sentTo, page, conId) async {
-    List<MessageModel> conversation = [];
-    var myId = await Helper.getLoginId();
-    print("dd");
-    print(conId);
-    var url = Uri.parse(
-        "$BASE_URL/message/get_conversation_between_users?sentTo=$sentTo&sentBy=$sentBy&page=$page&conId=$conId");
-    var response = await http.get(url);
-    var resData = jsonDecode(response.body);
+    try {
+      List<MessageModel> conversation = [];
+      var myId = await Helper.getLoginId();
+      print("dd");
+      print(conId);
+      var url = Uri.parse(
+          "$BASE_URL/message/get_conversation_between_users?sentTo=$sentTo&sentBy=$sentBy&page=$page&conId=$conId");
+      var response = await http.get(url);
+      var resData = jsonDecode(response.body);
 
-    for (var i = 0; i < resData["chat"].length; i++) {
-      if (resData["chat"][i] != null) {
-        var type = "";
-        var sentTo = resData["chat"][i]["sentTo"];
-        if (myId != sentTo) {
-          type = "source";
-        } else {
-          type = "reply";
+      for (var i = 0; i < resData["chat"].length; i++) {
+        if (resData["chat"][i] != null) {
+          var type = "";
+          var sentTo = resData["chat"][i]["sentTo"];
+          if (myId != sentTo) {
+            type = "source";
+          } else {
+            type = "reply";
+          }
+          conversation.add(MessageModel(
+              type: type,
+              message: resData["chat"][i]["message"],
+              time: resData["chat"][i]["time"],
+              path: resData["chat"][i]["path"],
+              status: resData["chat"][i]["status"]));
         }
-        conversation.add(MessageModel(
-            type: type,
-            message: resData["chat"][i]["message"],
-            time: resData["chat"][i]["time"],
-            path: resData["chat"][i]["path"],
-            status: resData["chat"][i]["status"]));
       }
+      return conversation;
+    } catch (e) {
+      return [];
     }
-    return conversation;
   }
 
   deleteConversation(otherUserId, myId) async {

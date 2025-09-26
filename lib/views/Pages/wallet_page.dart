@@ -1,7 +1,12 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:match5/Provider/user_provider.dart';
+import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/utils/reward_%20model.dart';
 import 'package:match5/utils/reward_card.dart';
+import 'package:match5/views/Pages/transaction_history.dart';
+import 'package:provider/provider.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -11,17 +16,83 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
+  final IapService iapService = IapService();
+  List<ProductDetails>? products;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (!mounted) return;
+    iapService.initialize().then((_) => {
+          setState(() {
+            products = iapService.products;
+            print("Products fetched: $products");
+          })
+        });
+    var user = Provider.of<UserProvider>(context, listen: false);
+    iapService.setUserProvider(user);
+  }
+
+  @override
+  void dispose() {
+    iapService.dispose();
+    super.dispose();
+  }
+
   List<RewardModel> fireIcons = [
-    RewardModel(icon: "assets/fire.png", reward: "10", price: "2.99"),
-    RewardModel(icon: "assets/double_fire.png", reward: "20", price: "3.99"),
-    RewardModel(icon: "assets/triple_fire.png", reward: "30", price: "4.99"),
-    RewardModel(icon: "assets/triple_fire.png", reward: "40", price: "5.99"),
-    RewardModel(icon: "assets/fire_log.png", reward: "50", price: "6.99"),
-    RewardModel(icon: "assets/fire_log.png", reward: "60", price: "7.99")
+    RewardModel(
+        icon: "assets/fire.png",
+        reward: "15",
+        price: "0.99",
+        packName: "Starter Pack",
+        isAd: false,
+        productId: "fires15"),
+    RewardModel(
+        icon: "assets/double_fire.png",
+        reward: "49",
+        price: "2.99",
+        packName: "Hot Pack",
+        isAd: false,
+        productId: "fires49"),
+    RewardModel(
+        icon: "assets/triple_fire.png",
+        reward: "120",
+        price: "5.99",
+        packName: "Blazing Pack",
+        isAd: false,
+        productId: "fires120"),
+    RewardModel(
+        icon: "assets/triple_fire.png",
+        reward: "299",
+        price: "9.99",
+        packName: "Inferno Pack",
+        isAd: false,
+        productId: "fires299"),
+    RewardModel(
+        icon: "assets/fire_log.png",
+        reward: "999",
+        price: "19.99",
+        packName: "Ultimate Pack",
+        isAd: false,
+        productId: "fires999"),
+    RewardModel(
+        icon: "assets/watch_ad.png",
+        reward: "0",
+        price: "1",
+        packName: "",
+        isAd: true)
   ];
 
   @override
   Widget build(BuildContext context) {
+    if (!iapService.available) {
+      return Scaffold(body: Center(child: Text("Store not available")));
+    }
+    if (iapService.products.isEmpty) {
+      return Scaffold(body: Center(child: Text("Loading products...")));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Wallet",
@@ -43,25 +114,32 @@ class _WalletPageState extends State<WalletPage> {
                 offset: Offset(0, 3),
               )
             ]),
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 16),
-                    child: Text(
-                      "Transaction history",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            child: InkWell(
+              onTap: () {
+                if (!mounted) return;
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => TransactionHistory()));
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(left: 16),
+                      child: Text(
+                        "Transaction history",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Icon(Icons.arrow_forward_ios_sharp),
-                  )
-                ],
+                    Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: Icon(Icons.arrow_forward_ios_sharp),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
@@ -70,16 +148,43 @@ class _WalletPageState extends State<WalletPage> {
             child: GridView.builder(
           padding: EdgeInsets.all(16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, crossAxisSpacing: 8, mainAxisSpacing: 8),
+            crossAxisCount: 2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 0.83,
+          ),
           itemBuilder: (context, index) {
-            return RewardCard(
-              fire: fireIcons[index].icon,
-              reward: fireIcons[index].reward,
-              price: fireIcons[index].price,
+            final reward = fireIcons[index];
+
+            ProductDetails? product;
+            try {
+              product = products?.firstWhere(
+                (p) => p.id == reward.productId,
+                orElse: () => throw Exception("Not found"),
+              );
+            } catch (_) {
+              product = null;
+            }
+
+            return InkWell(
+              onTap: () {
+                if (!reward.isAd) {
+                  iapService.buy(product!);
+                } else {
+                  //handle add thing
+                }
+              },
+              child: RewardCard(
+                fire: fireIcons[index].icon,
+                reward: fireIcons[index].reward,
+                price: product?.price ?? fireIcons[index].price,
+                packName: fireIcons[index].packName,
+                isAd: fireIcons[index].isAd,
+              ),
             );
           },
-          itemCount: 6,
-        ))
+          itemCount: fireIcons.length,
+        )),
       ]),
     );
   }

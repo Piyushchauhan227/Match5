@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:match5/Models/user_model.dart';
 import 'package:match5/main.dart';
 import 'package:match5/utils/login_helper.dart';
 import 'package:match5/utils/notification_message.dart';
+import 'package:match5/views/Pages/individual_loaded_chat.dart';
 
 class NotificationService {
   //handles fcm
@@ -15,16 +19,6 @@ class NotificationService {
 
   //request permission
   static Future init() async {
-    await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: true,
-      badge: true,
-      carPlay: false,
-      criticalAlert: true,
-      provisional: false,
-      sound: true,
-    );
-
     final currentToken = await _firebaseMessaging.getToken();
     print("Token is $currentToken");
 
@@ -45,10 +39,22 @@ class NotificationService {
     }
   }
 
+  static Future askForPermissions() async {
+    await _firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: true,
+      badge: true,
+      carPlay: false,
+      criticalAlert: true,
+      provisional: false,
+      sound: true,
+    );
+  }
+
   //initialize local notifications
   static Future localInit() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_stat_m5_clean');
 
 //for ios
     final DarwinInitializationSettings initializationSettingsDarwin =
@@ -61,10 +67,10 @@ class NotificationService {
     );
 
     //request notification permission
-    _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()!
-        .requestNotificationsPermission();
+    // _flutterLocalNotificationsPlugin
+    //     .resolvePlatformSpecificImplementation<
+    //         AndroidFlutterLocalNotificationsPlugin>()!
+    //     .requestNotificationsPermission();
 
     _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
@@ -75,9 +81,23 @@ class NotificationService {
 
   //on tap local notification in foreground
   static void onNotificationTap(NotificationResponse notificationResponse) {
+    print(
+        "notification repose hee check kro bs nr.payload chlta hai usko pele jsonDecode kro ");
+    print(notificationResponse);
+    var payload = jsonDecode(notificationResponse.payload!);
+    print(payload);
+    var tokens = List<String>.from(jsonDecode(payload["tokens"]));
     navigatorKey.currentState!.push(MaterialPageRoute(
-        builder: (builder) => NotificationMessage(
-            message: "", localNotificationResponse: notificationResponse)));
+        builder: (builder) => IndividualLoadedChat(
+              //here for otheruserid i send my id cause for other user this is otherUserid
+              username: payload["username"],
+              OtherUserId: payload["otherUserId"],
+              myId: payload["myId"],
+              profilePic: payload["profilePic"],
+              isBot: payload["isBot"],
+              token: tokens,
+              isItcomingFromMessagePage: false,
+            )));
   }
 
   //shwo a simple notification
@@ -96,5 +116,13 @@ class NotificationService {
         NotificationDetails(android: androidNotificationDetails);
     await _flutterLocalNotificationsPlugin
         .show(0, title, body, notificationDetails, payload: payload);
+  }
+
+  static void handleNotificationTapped(RemoteMessage message, UserModel user) {
+    // if (message.notification != null) {
+    //   print("bg noti tapped");
+    //   navigatorKey.currentState!.push(MaterialPageRoute(
+    //       builder: (builder) => MessagesPage(myUsername: )));
+    // }
   }
 }

@@ -1,8 +1,8 @@
 import 'package:match5/Models/user_model.dart';
 
-class LoginResult {
+class LoginResultEnd {
   int result;
   UserModel user;
 
-  LoginResult({required this.result, required this.user});
+  LoginResultEnd({required this.result, required this.user});
 }

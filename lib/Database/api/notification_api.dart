@@ -5,13 +5,14 @@ import 'package:match5/const.dart';
 import 'package:http/http.dart' as http;
 
 class NotificationAPI {
-  Future<void> notificationSend(
-      id, username, messages, conversationId, path) async {
+  Future<void> notificationSend(otherId, username, messages, conversationId,
+      path, isBot, profilePic, myId) async {
     try {
-      var res = await OnBoardConnection().gettingUserDetails(id);
+      var res = await OnBoardConnection().gettingUserDetails(otherId);
       var tokens = res.user.fcmToken;
-      print("tokens aarhe hai ");
-      print(tokens);
+
+      print("tokens aarhe hai $otherId and other is $myId");
+
       var url = Uri.parse("$BASE_URL/notification/notify");
       var response = await http.post(url,
           headers: {
@@ -22,12 +23,17 @@ class NotificationAPI {
             "message": messages,
             "username": username,
             "conversationId": conversationId,
-            "otherUserId": id,
-            "path": path
+            "otherUserId": myId,
+            "path": path,
+            "myId": otherId,
+            "isBot": isBot,
+            "profilePic": profilePic
           }));
 
       var resData = jsonDecode(response.body);
-    } catch (e) {}
+    } catch (e) {
+      print("error is here $e");
+    }
   }
 
   Future<void> createUserNotification(String userId, String title,

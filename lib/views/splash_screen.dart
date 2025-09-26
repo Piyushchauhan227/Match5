@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
@@ -15,7 +17,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  bool? loginCheck = false;
+  bool? loginCheck;
   UserModel? userhere;
 
   @override
@@ -29,47 +31,35 @@ class _SplashScreenState extends State<SplashScreen> {
     print(check);
     print("uiske upr");
 
-    if (check != Null) {
+    if (check != null) {
       print("yhan bhi");
       var id = await Helper.getLoginId();
       var res = await OnBoardConnection().gettingUserDetails(id);
       if (res != false) {
         if (!mounted) return;
         Provider.of<UserProvider>(context, listen: false).setUser(res.user);
-        setState(() {
-          userhere = res.user;
-        });
-        setState(() {
-          loginCheck = true;
-        });
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeScreen(user: res.user)),
+        );
       } else {
         print("yheen dikkt hai");
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const Loginscreen()),
+        );
       }
     } else {
-      setState(() {
-        loginCheck = check;
-      });
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const Loginscreen()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: InkWell(
-            onTap: () {
-              print(loginCheck);
-              loginCheck == true
-                  ? Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (builder) => HomeScreen(user: userhere!)))
-                  : Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (builder) => const Loginscreen()));
-            },
-            child: const Text(
-              "Match5",
-              style: TextStyle(fontSize: 44),
-            )),
-      ),
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

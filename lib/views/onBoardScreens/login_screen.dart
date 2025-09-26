@@ -10,6 +10,7 @@ import 'package:match5/Services/notification_service.dart';
 import 'package:match5/views/home_screen.dart';
 import 'package:match5/views/onBoardScreens/first_questionaire.dart';
 import 'package:match5/utils/login_helper.dart';
+import 'package:match5/views/onBoardScreens/loginWithMatch.dart';
 import 'package:provider/provider.dart';
 import 'package:match5/Provider/user_provider.dart';
 
@@ -56,8 +57,8 @@ class _LoginscreenState extends State<Loginscreen> {
                         Container(
                           width: 100,
                           height: 100,
-                          child: Image(
-                              image: AssetImage("assets/login_iccon.png")),
+                          child:
+                              Image(image: AssetImage("assets/login_icon.png")),
                         ),
                         SizedBox(
                           height: 0,
@@ -152,7 +153,9 @@ class _LoginscreenState extends State<Loginscreen> {
                           height: 8,
                         ),
                         InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            loginWithMatch();
+                          },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -172,17 +175,15 @@ class _LoginscreenState extends State<Loginscreen> {
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: CircleAvatar(
-                                          radius: 30,
-                                          child:
-                                              Image.asset("assets/fb_icon.png"),
+                                        child: ClipOval(
+                                          child: Image.asset("assets/icon.png"),
                                         ),
                                       ),
                                       const SizedBox(
-                                        width: 10,
+                                        width: 22,
                                       ),
                                       const Text(
-                                        "Continue with Facebook",
+                                        "Continue with Match5",
                                         style: TextStyle(
                                             fontSize: 20,
                                             fontFamily: "Lato",
@@ -334,5 +335,11 @@ class _LoginscreenState extends State<Loginscreen> {
         }
       }
     }
+  }
+
+  void loginWithMatch() {
+    if (!mounted) return;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => LoginWithMatch()));
   }
 }

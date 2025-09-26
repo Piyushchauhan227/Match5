@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:match5/Database/api/user_api.dart';
-import 'package:match5/views/onBoardScreens/choose_avatar.dart';
+import 'package:match5/views/onBoardScreens/username.dart';
 
 class SecondQuestionaire extends StatefulWidget {
   const SecondQuestionaire({required this.gender, required this.id, super.key});
@@ -157,10 +157,10 @@ class _SecondQuestionaireState extends State<SecondQuestionaire> {
                       var list = await OnBoardConnection().getAvatarList();
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (builder) => Username(
-                              id: widget.id,
-                              gender: widget.gender,
-                              interestedGender: genderList[selectedIndex],
-                              listOfImges: list)));
+                                id: widget.id,
+                                gender: widget.gender,
+                                interestedGender: genderList[selectedIndex],
+                              )));
                     },
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     elevation: 20,

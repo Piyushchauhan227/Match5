@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:match5/Database/api/bot_status_api.dart';
 import 'package:match5/Database/api/bot_user_api.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Services/socket_service.dart';
@@ -238,7 +239,7 @@ class _ConnectScreenState extends State<ConnectScreen>
 
   void connectToBot() async {
     var randomIndex = 0;
-    var botUserComing = await BotUserAPI().getBots(user!.id);
+    var botUserComing = await BotUserAPI().getBots(user!.id, user!.gender);
 
     if (botUserComing.isNotEmpty) {
       randomIndex = Random().nextInt(botUserComing.length);
@@ -250,6 +251,10 @@ class _ConnectScreenState extends State<ConnectScreen>
       setState(() {
         botUser = botUserComing[randomIndex]["_id"];
       });
+
+      print("checking conect screen botstatus creation ${user!.id}");
+
+      //emitting that the bot chat has initialized
       socket.emit("bot_chat_initializing", {
         "name": botUserComing[randomIndex]["username"],
         "botId": botUserComing[randomIndex]["_id"],
@@ -258,12 +263,16 @@ class _ConnectScreenState extends State<ConnectScreen>
     } else {
       //create a new bot here
       var userName = generateRandomName();
-
-      var newBot = await BotUserAPI().createBot(userName);
+      print("checking conect screen botstatus creation  at else${user!.id}");
+      var newBot = await BotUserAPI()
+          .createBot(userName, user!.interestedGender, user!.gender);
       if (!mounted) return;
       setState(() {
         botUser = newBot["_id"];
       });
+
+//creating botstatus here
+
       socket.emit("bot_chat_initializing", {
         "name": newBot["username"],
         "botId": newBot["_id"],

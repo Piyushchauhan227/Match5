@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/views/Pages/blocked_users.dart';
-import 'package:match5/views/Pages/edit_profile.dart';
+import 'package:match5/views/Pages/privacy_policy.dart';
+import 'package:match5/views/Pages/terms_of_services.dart';
+import 'package:match5/views/Pages/transaction_history.dart';
 import 'package:match5/views/Pages/user_profile.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Setting_page extends StatefulWidget {
   const Setting_page({super.key});
@@ -27,9 +33,11 @@ class _Setting_pageState extends State<Setting_page> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back),
-        title: const Text("Settings",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: const Text("Settings",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -471,19 +479,79 @@ class _Setting_pageState extends State<Setting_page> {
     });
   }
 
-  void purchaseHistory() {}
+  void purchaseHistory() {
+    if (!mounted) return;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => TransactionHistory()));
+  }
 
   void promocode() {}
 
-  void reportBug() {}
+  void reportBug() async {
+    final Email email = Email(
+      body:
+          'Describe the issue you faced:\n\nSteps to reproduce:\n1.\n2.\n3.\n\nExpected result:\n\nActual result:',
+      subject: 'Bug Report',
+      recipients: ['raydevelopment227@gmail.com'],
+      isHTML: false,
+    );
 
-  void contactAndSupport() {}
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (error) {
+      print(error);
+    }
+  }
 
-  void termsOfServices() {}
+  void contactAndSupport() async {
+    final Email email = Email(
+      body: 'Hello, I need help with...',
+      subject: 'Support Request',
+      recipients: ['raydevelopment227@gmail.com'],
+      isHTML: false,
+    );
 
-  void privacyPolicy() {}
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (error) {
+      print(error);
+    }
+  }
 
-  void inviteFriends() {}
+  void termsOfServices() {
+    if (!mounted) return;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => TermsOfServices()));
+  }
 
-  void rateUs() {}
+  void privacyPolicy() {
+    if (!mounted) return;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => PrivacyPolicy()));
+  }
+
+  void inviteFriends() {
+    const String appLink =
+        'https://play.google.com/store/apps/details?id=com.ray.match5'; // Your app link
+    Share.share(
+      'Hey! Join me on Match5, a fun chat and dating app. Download here: $appLink',
+      subject: 'Join me on Match5!',
+    );
+  }
+
+  void rateUs() async {
+    final InAppReview inAppReview = InAppReview.instance;
+
+    if (await inAppReview.isAvailable()) {
+      // Try native in-app review dialog
+      inAppReview.requestReview();
+    } else {
+      final Uri uri = Uri.parse(
+          'https://play.google.com/store/apps/details?id=com.ray.match5');
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    }
+  }
 }

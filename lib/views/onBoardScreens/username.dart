@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Provider/user_provider.dart';
+import 'package:match5/Services/notification_service.dart';
 import 'package:match5/questions.dart';
 import 'package:match5/utils/choose_avatar.dart';
 import 'package:match5/views/home_screen.dart';
@@ -14,13 +15,11 @@ class Username extends StatefulWidget {
       {required this.id,
       required this.gender,
       required this.interestedGender,
-      required this.listOfImges,
       super.key});
 
   final String id;
   final String gender;
   final String interestedGender;
-  final List<dynamic> listOfImges;
 
   @override
   State<Username> createState() => _UsernameState();
@@ -28,7 +27,7 @@ class Username extends StatefulWidget {
 
 class _UsernameState extends State<Username> {
   bool isSelected = false;
-  var selectedIndex = -1;
+  TextEditingController username = TextEditingController();
 
   @override
   void dispose() {
@@ -70,59 +69,69 @@ class _UsernameState extends State<Username> {
                 ),
                 Center(
                   child: Text(
-                    "Set Up Your Avatar",
+                    "Enter Username",
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 4,
-                ),
-                Center(
-                  child: Text(
-                    "Choose how you’d like to see your avatar",
-                    style: TextStyle(fontSize: 12, color: Colors.black),
                   ),
                 ),
                 SizedBox(
                   height: 16,
                 ),
+                Center(
+                    child: TextField(
+                  onTap: () {
+                    setState(() {
+                      isSelected = true;
+                    });
+                  },
+                  controller: username,
+                  decoration: InputDecoration(
+                      labelText: "Username",
+                      labelStyle: TextStyle(
+                          color: const Color.fromARGB(255, 127, 127, 127)),
+                      enabledBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                )),
                 SizedBox(
-                  height: 550,
-                  child: GridView.builder(
-                      itemCount: widget.listOfImges.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4),
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                isSelected = true;
-                                selectedIndex = index;
-                              });
-                            },
-                            child: Stack(
-                              children: [
-                                ChooseAvatar(
-                                  avatarName: widget.listOfImges[index],
-                                ),
-                                (isSelected == true && selectedIndex == index)
-                                    ? Positioned.fill(
-                                        child: ClipOval(
-                                          child: Image.asset(
-                                            "assets/selected_profile_pic.png",
-                                            fit: BoxFit.fill,
-                                            height: 80,
-                                            width: 80,
-                                          ),
-                                        ),
-                                      )
-                                    : SizedBox(
-                                        height: 0,
-                                      )
-                              ],
-                            ));
-                      }),
-                )
+                  height: 16,
+                ),
+                // SizedBox(
+                //   height: 550,
+                //   child: GridView.builder(
+                //       itemCount: widget.listOfImges.length,
+                //       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                //           crossAxisCount: 4),
+                //       itemBuilder: (context, index) {
+                //         return GestureDetector(
+                //             onTap: () {
+                //               setState(() {
+                //                 isSelected = true;
+                //                 selectedIndex = index;
+                //               });
+                //             },
+                //             child: Stack(
+                //               children: [
+                //                 ChooseAvatar(
+                //                   avatarName: widget.listOfImges[index],
+                //                 ),
+                //                 (isSelected == true && selectedIndex == index)
+                //                     ? Positioned.fill(
+                //                         child: ClipOval(
+                //                           child: Image.asset(
+                //                             "assets/selected_profile_pic.png",
+                //                             fit: BoxFit.fill,
+                //                             height: 80,
+                //                             width: 80,
+                //                           ),
+                //                         ),
+                //                       )
+                //                     : SizedBox(
+                //                         height: 0,
+                //                       )
+                //               ],
+                //             ));
+                //       }),
+                // )
               ],
             ),
           ),
@@ -132,26 +141,28 @@ class _UsernameState extends State<Username> {
               right: 20,
               child: FloatingActionButton(
                 onPressed: () async {
-                  print(widget.listOfImges[selectedIndex]);
-                  var name = generateRandomName();
+                  var random = Random();
+                  var picnmbr = random.nextInt(27) + 1;
+                  var picname = "pic_${picnmbr}.png";
+                  print("picnames are here $picname");
 
-                  if (isSelected) {
+                  if (!username.text.trim().isEmpty) {
                     var res = await OnBoardConnection()
                         .updateUser(
                             widget.id,
                             widget.gender,
                             widget.interestedGender,
-                            name,
-                            widget.listOfImges[selectedIndex],
+                            username.text.trim(),
+                            picname,
                             "")
-                        .then((onValue) {
+                        .then((onValue) async {
                       print("then andar");
                       if (onValue.result == 200) {
                         print("200 ayaa");
 
                         Provider.of<UserProvider>(context, listen: false)
                             .setUser(onValue.user);
-
+                        await NotificationService.askForPermissions();
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
                               builder: (builder) => HomeScreen(
