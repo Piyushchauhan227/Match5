@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_cropper/image_cropper.dart';
 
 class RewardCard extends StatefulWidget {
@@ -23,6 +24,22 @@ class RewardCard extends StatefulWidget {
 }
 
 class _RewardCardState extends State<RewardCard> {
+  RewardedAd? _rewardedAd;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadRewardedAd();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _rewardedAd?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.isAd) {
@@ -130,6 +147,7 @@ class _RewardCardState extends State<RewardCard> {
       return InkWell(
         onTap: () {
           print("ad");
+          _showRewardedAd();
         },
         child: Padding(
           padding: const EdgeInsets.all(4.0),
@@ -260,5 +278,47 @@ class _RewardCardState extends State<RewardCard> {
       );
     }
     return SizedBox();
+  }
+
+  void loadRewardedAd() {
+    RewardedAd.load(
+        adUnitId: "ca-app-pub-3940256099942544/5224354917",
+        request: const AdRequest(),
+        rewardedAdLoadCallback:
+            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+          print("✅ Rewarded Ad Loaded");
+          _rewardedAd = ad;
+        }, onAdFailedToLoad: (LoadAdError error) {
+          print("❌ Failed to load rewarded ad: $error");
+          _rewardedAd = null;
+        }));
+  }
+
+  void _showRewardedAd() {
+    if (_rewardedAd != null) {
+      _rewardedAd!.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+        print("🎁 User earned: ${reward.amount} ${reward.type}");
+      });
+
+      // Dispose old ad and load a new one
+      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (RewardedAd ad) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+      );
+
+      _rewardedAd = null;
+    } else {
+      print("⚠️ Rewarded Ad not ready yet.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Ad is not ready, please try again later.")),
+      );
+    }
   }
 }
