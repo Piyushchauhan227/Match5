@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Provider/notification_provider.dart';
 import 'package:match5/Provider/user_provider.dart';
@@ -28,32 +32,40 @@ Future _firebaseBackgroundMessage(RemoteMessage message) async {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  //initialize admob
-  await MobileAds.instance.initialize();
+  //initializing app
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    //initialize admob
+    await MobileAds.instance.initialize();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  await SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+    // Send Flutter framework errors to Crashlytics
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+    await SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
 //initialize firebase notifications
-  await NotificationService.init();
+    await NotificationService.init();
 
 //initialize local notifications
-  await NotificationService.localInit();
+    await NotificationService.localInit();
 
-  //initializing app
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserProvider()),
-      ChangeNotifierProvider(create: (context) => MessageListProvider()),
-      ChangeNotifierProvider(create: (context) => NotificationProvider())
-    ],
-    child: MainApp(),
-  ));
+    runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(create: (context) => MessageListProvider()),
+        ChangeNotifierProvider(create: (context) => NotificationProvider()),
+        ChangeNotifierProvider(create: (context) => AnalyticsProvider())
+      ],
+      child: MainApp(),
+    ));
+  }, (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  });
 }
 
 class MainApp extends StatefulWidget {
