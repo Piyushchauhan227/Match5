@@ -8,6 +8,7 @@ import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/IAP_service.dart';
+import 'package:match5/const.dart';
 import 'package:match5/utils/reward_%20model.dart';
 import 'package:match5/utils/reward_card.dart';
 import 'package:match5/views/Pages/transaction_history.dart';
@@ -203,7 +204,7 @@ class _WalletPageState extends State<WalletPage> {
   Future<void> loadRewardedAd() async {
     isAdLoaded = true;
     RewardedAd.load(
-        adUnitId: "ca-app-pub-3940256099942544/5224354917",
+        adUnitId: REWARD_AD_UNIT,
         request: const AdRequest(),
         rewardedAdLoadCallback:
             RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
