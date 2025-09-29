@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:match5/Database/api/user_api.dart';
+import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/utils/reward_%20model.dart';
@@ -18,11 +23,15 @@ class WalletPage extends StatefulWidget {
 class _WalletPageState extends State<WalletPage> {
   final IapService iapService = IapService();
   List<ProductDetails>? products;
+  RewardedAd? _rewardedAd;
+  bool isAdLoaded = false;
+  UserProvider? user;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    loadRewardedAd();
     if (!mounted) return;
     iapService.initialize().then((_) => {
           setState(() {
@@ -30,13 +39,14 @@ class _WalletPageState extends State<WalletPage> {
             print("Products fetched: $products");
           })
         });
-    var user = Provider.of<UserProvider>(context, listen: false);
-    iapService.setUserProvider(user);
+    user = Provider.of<UserProvider>(context, listen: false);
+    iapService.setUserProvider(user!);
   }
 
   @override
   void dispose() {
     iapService.dispose();
+    _rewardedAd?.dispose();
     super.dispose();
   }
 
@@ -172,6 +182,7 @@ class _WalletPageState extends State<WalletPage> {
                   iapService.buy(product!);
                 } else {
                   //handle add thing
+                  _showRewardedAd();
                 }
               },
               child: RewardCard(
@@ -187,5 +198,91 @@ class _WalletPageState extends State<WalletPage> {
         )),
       ]),
     );
+  }
+
+  Future<void> loadRewardedAd() async {
+    isAdLoaded = true;
+    RewardedAd.load(
+        adUnitId: "ca-app-pub-3940256099942544/5224354917",
+        request: const AdRequest(),
+        rewardedAdLoadCallback:
+            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+          print("✅ Rewarded Ad Loaded");
+          _rewardedAd = ad;
+          isAdLoaded = false;
+        }, onAdFailedToLoad: (LoadAdError error) {
+          print("❌ Failed to load rewarded ad: $error");
+          _rewardedAd = null;
+          isAdLoaded = false;
+          Future.delayed(Duration(seconds: 3), () {
+            if (mounted) loadRewardedAd();
+          });
+        }));
+  }
+
+  void _showRewardedAd() async {
+    if (_rewardedAd != null) {
+      _rewardedAd!.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+        print("🎁 User earned: ${reward.amount} ${reward.type}");
+        addToDb();
+      });
+
+      // Dispose old ad and load a new one
+      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (RewardedAd ad) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+      );
+
+      _rewardedAd = null;
+    } else if (isAdLoaded) {
+      print("koma");
+      showDialog(
+          context: context,
+          builder: (context) {
+            return const Dialog(
+                backgroundColor: Colors.transparent,
+                child: Center(child: CircularProgressIndicator()));
+          });
+
+      // Poll until the ad is ready
+      while (isAdLoaded) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+      if (mounted) Navigator.of(context).pop(); // close spinner
+
+      if (_rewardedAd != null) {
+        _showRewardedAd(); // 👈 now we can show
+        _rewardedAd = null;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No ads available right now")),
+        );
+      }
+    }
+  }
+
+  Future<void> addToDb() async {
+    await OnBoardConnection().updateUserFires(5, user!.user!.id);
+    user!.increaseFires();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        title: Text("Success 🎉"),
+        content: Text("You earned 5 free Fires!"),
+      ),
+    );
+
+    // Auto close after 1.5 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pop();
+    });
   }
 }

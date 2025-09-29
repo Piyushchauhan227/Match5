@@ -171,4 +171,17 @@ class OnBoardConnection {
       print("not able to clean fcm in db $e");
     }
   }
+
+  Future<void> updateUserFires(fires, id) async {
+    try {
+      var incrementValue = fires.toString();
+      var url =
+          Uri.parse("$BASE_URL/user/updateFires?id=$id&fires=$incrementValue");
+      var response = await http.patch(url);
+      var resData = jsonDecode(response.body);
+      print(resData);
+    } catch (e) {
+      print("error  $e");
+    }
+  }
 }
