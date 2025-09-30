@@ -230,6 +230,12 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
                           },
                           value: 'true',
                           child: Text("Delete")),
+                      PopupMenuItem(
+                          onTap: () {
+                            report();
+                          },
+                          value: 'true',
+                          child: Text("Report")),
                     ],
                   ),
               ],
@@ -1006,5 +1012,48 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
             actions: [cancelButton, okButton],
           );
         });
+  }
+
+  void report() {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsetsGeometry.all(16),
+            child: Wrap(
+              children: [
+                Center(
+                    child: Text(
+                  "Report User",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                )),
+                SizedBox(
+                  height: 10,
+                ),
+                buildReportTile(widget.OtherUserId, "Harassment / Bullying"),
+                buildReportTile(widget.OtherUserId, "Hate Speech"),
+                buildReportTile(widget.OtherUserId, "Sexual / Inappropriate"),
+                buildReportTile(widget.OtherUserId, "Spam / Scam"),
+                buildReportTile(widget.OtherUserId, "Fake Profile"),
+                buildReportTile(widget.OtherUserId, "Other"),
+              ],
+            ),
+          );
+        });
+  }
+
+  Widget buildReportTile(String otherUserId, String s) {
+    return ListTile(
+      leading: Icon(
+        Icons.flag,
+        color: Colors.red,
+      ),
+      title: Text(s),
+      onTap: () {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Report submitted for a reason $s")));
+      },
+    );
   }
 }
