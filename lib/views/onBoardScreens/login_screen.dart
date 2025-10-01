@@ -199,7 +199,7 @@ class _LoginscreenState extends State<Loginscreen> {
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
-                              "By registering, you accept our Terms and Conditions of Use and out Privacy Policy "),
+                              "By registering, you accept our Terms and Conditions of Use and our Privacy Policy "),
                         )
                       ],
                     ),

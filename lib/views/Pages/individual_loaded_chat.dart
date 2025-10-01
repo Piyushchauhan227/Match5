@@ -13,6 +13,8 @@ import 'package:match5/Database/api/block_user_api.dart';
 import 'package:match5/Database/api/bot_status_api.dart';
 import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/notification_api.dart';
+import 'package:match5/Database/api/user_api.dart';
+import 'package:match5/Database/report_user_api.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/user_provider.dart';
@@ -1028,7 +1030,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 )),
                 SizedBox(
-                  height: 10,
+                  height: 16,
                 ),
                 buildReportTile(widget.OtherUserId, "Harassment / Bullying"),
                 buildReportTile(widget.OtherUserId, "Hate Speech"),
@@ -1049,10 +1051,22 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         color: Colors.red,
       ),
       title: Text(s),
-      onTap: () {
+      onTap: () async {
         if (!mounted) return;
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Report submitted for a reason $s")));
+
+        //add to db
+        await ReportUserApi()
+            .reportUser(widget.myId, widget.OtherUserId, s, conversationId);
+        var block = await BlockUserApi()
+            .createBlockItem(widget.myId, widget.OtherUserId, "true");
+        if (block != null) {
+          setState(() {
+            isBlocked = "true";
+          });
+        }
       },
     );
   }
