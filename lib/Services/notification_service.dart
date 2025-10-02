@@ -19,24 +19,32 @@ class NotificationService {
 
   //request permission
   static Future init() async {
-    final currentToken = await _firebaseMessaging.getToken();
-    print("Token is $currentToken");
+    String? currentToken;
+    var token = await Helper.getFCMToken();
+    var prevToken = await Helper.getPreviousFCMToken();
 
-    final token = await Helper.getFCMToken();
-
-    await _firebaseMessaging.subscribeToTopic("all_users");
-    print("Subscribed to topic: all_users $token");
+    currentToken = token;
 
     if (token == null) {
-      print("in null");
+      currentToken = await _firebaseMessaging.getToken();
       await Helper.saveFCMToken(currentToken!);
-      var pt = await Helper.getFCMToken();
-      print("purja hai $pt");
       await Helper.savePreviousFCMToken(currentToken);
-    } else if (token != currentToken) {
-      await Helper.saveFCMToken(currentToken!);
-      await Helper.savePreviousFCMToken(token);
+      print("tetins $currentToken");
     }
+
+    if (currentToken != null) {
+      await _firebaseMessaging.subscribeToTopic("all_users");
+      print("Subscribed to topic: all_users $token");
+    }
+
+    _firebaseMessaging.onTokenRefresh.listen((newToken) async {
+      await Helper.saveFCMToken(newToken);
+      if (currentToken != null) {
+        await Helper.savePreviousFCMToken(currentToken!);
+      }
+      print("tetins new token $newToken");
+      print("tetins old token $currentToken");
+    });
   }
 
   static Future askForPermissions() async {
