@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:match5/Database/api/block_user_api.dart';
@@ -14,10 +15,11 @@ import 'package:match5/Database/api/bot_status_api.dart';
 import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/notification_api.dart';
 import 'package:match5/Database/api/user_api.dart';
-import 'package:match5/Database/report_user_api.dart';
+import 'package:match5/Database/api/report_user_api.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/user_provider.dart';
+import 'package:match5/Services/ad_service.dart';
 import 'package:match5/Services/resize_helper.dart';
 import 'package:match5/Services/socket_service.dart';
 import 'package:match5/const.dart';
@@ -75,11 +77,16 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
   var page = 1;
   bool limit = false;
   UserModel? myUserModel;
+  AdService adService = AdService();
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     super.initState();
+    //initializing interstitial ad;
+    if (widget.isItcomingFromMessagePage == false) {
+      adService.loadInterstitialAndShow();
+    }
     checkBlockingAtFirst();
     getConversation(page);
     print("ddddddddddd");

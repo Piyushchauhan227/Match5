@@ -9,8 +9,10 @@ import 'package:intl/intl.dart';
 import 'package:match5/Database/api/bot_status_api.dart';
 import 'package:match5/Database/api/bot_user_api.dart';
 import 'package:match5/Database/api/messages_api.dart';
+import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Services/ad_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/questions.dart';
 import 'package:match5/utils/message_send.dart';
@@ -78,16 +80,13 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   bool timerStart = false;
   bool alreadyPoppedNoNeedForMatchResult = false;
   bool showBuyMoreFireinMatchPrompt = false;
-  InterstitialAd? _interstitialAd;
-  bool isAdLoaded = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     //initialize ads
-    MobileAds.instance.initialize();
-    loadInterstitialAd();
+
     role = widget.role;
     userModel = Provider.of<UserProvider>(context, listen: false).user;
 
@@ -127,6 +126,11 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   @override
   Widget build(BuildContext context) {
     var userForFires = Provider.of<UserProvider>(context, listen: true).user;
+    if (userForFires!.coins <= 0) {
+      setState(() {
+        showBuyMoreFireinMatchPrompt = true;
+      });
+    }
 
     return GestureDetector(
       onTap: () {
@@ -558,12 +562,6 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                                               decisionTimeForBot = false;
                                             });
                                             alertForMatchYes();
-                                          } else {
-                                            if (!mounted) return;
-                                            setState(() {
-                                              showBuyMoreFireinMatchPrompt =
-                                                  true;
-                                            });
                                           }
                                         },
                                         child: Container(
@@ -890,9 +888,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     });
 
     widget.socket.on("decision_time", (data) {
-      _showInterstitialAd();
-
       print("decision time");
+
       setState(() {
         decisionTime = true;
       });
@@ -902,6 +899,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     });
 
     widget.socket.on("match_result", (data) async {
+      await OnBoardConnection().updateUserFires(-1, userModel!.id);
       print("mtach result is here");
 
       if (data["matched"]) {
@@ -1141,37 +1139,5 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         }
       }
     });
-  }
-
-  void loadInterstitialAd() {
-    InterstitialAd.load(
-        adUnitId: INTERSTITIAL_AD_UNIT,
-        request: AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          isAdLoaded = true;
-          print("interstitial Ad Loaded");
-        }, onAdFailedToLoad: (error) {
-          print("Failed to load interstitial Ad");
-        }));
-  }
-
-  void _showInterstitialAd() {
-    if (isAdLoaded && _interstitialAd != null) {
-      _interstitialAd!.fullScreenContentCallback =
-          FullScreenContentCallback(onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        loadInterstitialAd();
-      }, onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        loadInterstitialAd();
-      });
-
-      _interstitialAd!.show();
-      _interstitialAd = null;
-      isAdLoaded = false;
-    } else {
-      print("Interstitial ad is not ready");
-    }
   }
 }

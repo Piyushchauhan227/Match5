@@ -175,6 +175,7 @@ class OnBoardConnection {
   Future<void> updateUserFires(fires, id) async {
     try {
       var incrementValue = fires.toString();
+      print("incremented fires are $incrementValue");
       var url =
           Uri.parse("$BASE_URL/user/updateFires?id=$id&fires=$incrementValue");
       var response = await http.patch(url);
