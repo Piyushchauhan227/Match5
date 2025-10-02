@@ -221,7 +221,7 @@ class _LoginWithMatchState extends State<LoginWithMatch> {
           Provider.of<UserProvider>(context, listen: false).setUser(res.user);
 
           await NotificationService.init();
-          await NotificationService.askForPermissions();
+          // await NotificationService.askForPermissions();
           Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                   builder: (builder) => HomeScreen(user: res.user)),
@@ -251,7 +251,7 @@ class _LoginWithMatchState extends State<LoginWithMatch> {
                 timeToSend);
 
             await NotificationService.init();
-            await NotificationService.askForPermissions();
+            // await NotificationService.askForPermissions();
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                     builder: (builder) =>

@@ -162,7 +162,7 @@ class _UsernameState extends State<Username> {
 
                         Provider.of<UserProvider>(context, listen: false)
                             .setUser(onValue.user);
-                        await NotificationService.askForPermissions();
+                        // await NotificationService.askForPermissions();
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
                               builder: (builder) => HomeScreen(
