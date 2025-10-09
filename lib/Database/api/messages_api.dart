@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/message_model_in_db.dart';
 import 'package:match5/const.dart';
@@ -7,50 +8,63 @@ import 'package:match5/utils/login_helper.dart';
 
 class MessagesAPI {
   Future<String> createConversation(
-      message, time, sentTo, sentBy, path, isBot) async {
-    var url = Uri.parse('$BASE_URL/message/create_conversation');
-    var response = await http.post(url, body: {
-      "message": message,
-      "time": time,
-      "sentTo": sentTo,
-      "sentBy": sentBy,
-      "path": path,
-      "isBot": isBot
-    });
-    var resData = jsonDecode(response.body);
+      message, time, sentTo, sentBy, path, isBot, String status) async {
+    try {
+      var url = Uri.parse('$BASE_URL/message/create_conversation');
+      var response = await http.post(url, body: {
+        "message": message,
+        "time": time,
+        "sentTo": sentTo,
+        "sentBy": sentBy,
+        "path": path,
+        "isBot": isBot,
+        "status": status
+      });
+      var resData = jsonDecode(response.body);
 
-    return resData["array"];
+      return resData["array"];
+    } catch (e) {
+      return "";
+    }
   }
 
   Future<String> getConversationId(sentTo, sentBy) async {
-    var url = Uri.parse(
-        "$BASE_URL/message/get_conversation_id?sentTo=$sentTo&sentBy=$sentBy");
+    try {
+      var url = Uri.parse(
+          "$BASE_URL/message/get_conversation_id?sentTo=$sentTo&sentBy=$sentBy");
 
-    var response = await http.get(url);
-    var resData = jsonDecode(response.body);
+      var response = await http.get(url);
+      var resData = jsonDecode(response.body);
 
-    if (resData["id"] != null) {
-      return resData["id"];
-    } else {
+      if (resData["id"] != null) {
+        return resData["id"];
+      } else {
+        return "null";
+      }
+    } catch (e) {
       return "null";
     }
   }
 
   Future<bool> updateConversation(
       message, time, sentTo, sentBy, conversationId, status, path) async {
-    var url = Uri.parse("$BASE_URL/message/update_conversation");
-    var response = await http.post(url, body: {
-      "message": message,
-      "time": time,
-      "sentTo": sentTo,
-      "sentBy": sentBy,
-      "id": conversationId,
-      "status": status,
-      "path": path
-    });
+    try {
+      var url = Uri.parse("$BASE_URL/message/update_conversation");
+      var response = await http.post(url, body: {
+        "message": message,
+        "time": time,
+        "sentTo": sentTo,
+        "sentBy": sentBy,
+        "id": conversationId,
+        "status": status,
+        "path": path
+      });
 
-    var resData = jsonDecode(response.body);
-    return resData["limit"];
+      var resData = jsonDecode(response.body);
+      return resData["limit"];
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<List<dynamic>> getSentByMessages(sentBy) async {
@@ -118,30 +132,38 @@ class MessagesAPI {
   }
 
   Future<void> getConversationEvenIfDeleted(id) async {
-    print("lgta hai yhi nhi chla");
-    var url = Uri.parse(
-        "$BASE_URL/message/get_conversation_even_deleted?conversationId=$id");
-    var response = await http.get(url);
+    try {
+      print("lgta hai yhi nhi chla");
+      var url = Uri.parse(
+          "$BASE_URL/message/get_conversation_even_deleted?conversationId=$id");
+      var response = await http.get(url);
 
-    var resData = jsonDecode(response.body);
+      var resData = jsonDecode(response.body);
 
-    var deletedFor = resData["list"]["deletedFor"];
-    if (deletedFor.length >= 2) {
-      // await updateConversation(message, time, sentTo, sentBy, conversationId, status)
+      var deletedFor = resData["list"]["deletedFor"];
+      if (deletedFor.length >= 2) {
+        // await updateConversation(message, time, sentTo, sentBy, conversationId, status)
 
-      //yahan pe update krna hai conversation ko
+        //yahan pe update krna hai conversation ko
+      }
+      // print(resData["list"]);
+    } catch (e) {
+      debugPrint("error in getConvo even delete $e");
     }
-    // print(resData["list"]);
   }
 
   Future<bool> getlimitInfo(id) async {
-    print("limit ke andar");
-    var url = Uri.parse("$BASE_URL/message/limitReached?conversationId=$id");
-    var response = await http.get(url);
+    try {
+      print("limit ke andar");
+      var url = Uri.parse("$BASE_URL/message/limitReached?conversationId=$id");
+      var response = await http.get(url);
 
-    var resData = jsonDecode(response.body);
-    print("res btau");
-    print(resData);
-    return resData["limit"];
+      var resData = jsonDecode(response.body);
+      print("res btau");
+      print(resData);
+      return resData["limit"];
+    } catch (e) {
+      return false;
+    }
   }
 }

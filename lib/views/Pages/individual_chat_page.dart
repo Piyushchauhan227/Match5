@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:match5/Database/api/bot_status_api.dart';
@@ -79,7 +80,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   var timeLeft = 10;
   bool timerStart = false;
   bool alreadyPoppedNoNeedForMatchResult = false;
-  bool showBuyMoreFireinMatchPrompt = false;
+  // bool showBuyMoreFireinMatchPrompt = false;
 
   @override
   void initState() {
@@ -118,6 +119,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
       widget.socket.disconnect();
       widget.socket.dispose();
     }
+
     chatWaitTimer?.cancel();
     counterTimer?.cancel();
     super.dispose();
@@ -125,12 +127,14 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    var userForFires = Provider.of<UserProvider>(context, listen: true).user;
-    if (userForFires!.coins <= 0) {
-      setState(() {
-        showBuyMoreFireinMatchPrompt = true;
-      });
-    }
+    // var userForFires = Provider.of<UserProvider>(context, listen: true).user;
+    // if (userForFires!.coins <= 0) {
+    //   setState(() {
+    //     showBuyMoreFireinMatchPrompt = true;
+    //   });
+    // }
+
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return GestureDetector(
       onTap: () {
@@ -177,12 +181,17 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    width: 150,
-                    child: Text(widget.username,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold)),
-                  ),
+                      width: 170,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(widget.username,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold)),
+                        ],
+                      )),
                 ),
               ],
             ),
@@ -216,6 +225,59 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           body: Stack(children: [
             Column(
               children: [
+                Container(
+                  margin: EdgeInsets.all(4),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: role == "reader"
+                          ? [Colors.grey.shade100, Colors.grey.shade400]
+                          : [Colors.orangeAccent, Colors.deepOrange],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: role == "reader"
+                            ? Colors.grey.shade100
+                            : Colors.orange.shade100,
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          role != "reader"
+                              ? "🔥 It’s your turn!"
+                              : "⏳ Waiting for ${widget.username}",
+                          style: TextStyle(
+                            color: role != "reader"
+                                ? Colors.white
+                                : Colors.grey.shade800,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          role != "reader"
+                              ? "Go ahead, send your next message!"
+                              : "They’re typing... hold tight!",
+                          style: TextStyle(
+                            color: role != "reader"
+                                ? Colors.white70
+                                : Colors.grey.shade700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Expanded(
                     child: ListView.builder(
                         controller: _scrollController,
@@ -304,13 +366,19 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                       AnimatedContainer(
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeOut,
-                        height: showPrompts ? 300 : 600,
+                        height: showPrompts
+                            ? isKeyboardVisible
+                                ? 250
+                                : 450
+                            : 250,
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(10)),
                         ),
                         child: ListView.builder(
                             itemCount: 10,
+                            shrinkWrap: true,
                             itemBuilder: (context, index) {
                               return GestureDetector(
                                 onTap: () {
@@ -344,12 +412,12 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Icon(Icons.question_answer, color: Colors.blue),
                         SizedBox(width: 8),
                         Text(
-                          "Other user is typing....",
+                          "Free chat unlocks when you both match 🔓",
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontStyle: FontStyle.italic),
@@ -532,37 +600,29 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                                     children: [
                                       InkWell(
                                         onTap: () {
-                                          var userFire = userForFires.coins;
-
-                                          if (userFire > 0) {
-                                            Provider.of<UserProvider>(context,
-                                                    listen: false)
-                                                .decreaseFires();
-
-                                            if (decisionTimeForBot) {
-                                              widget.socket
-                                                  .emit("decision_answer", {
-                                                "userId": widget.myId,
-                                                "answer": "yes",
-                                                "bot": true,
-                                                "conversationId": conversationId
-                                              });
-                                            } else {
-                                              widget.socket
-                                                  .emit("decision_answer", {
-                                                "userId": widget.myId,
-                                                "answer": "yes",
-                                                "bot": false,
-                                                "conversationId": conversationId
-                                              });
-                                            }
-
-                                            setState(() {
-                                              decisionTime = false;
-                                              decisionTimeForBot = false;
+                                          if (decisionTimeForBot) {
+                                            widget.socket
+                                                .emit("decision_answer", {
+                                              "userId": widget.myId,
+                                              "answer": "yes",
+                                              "bot": true,
+                                              "conversationId": conversationId
                                             });
-                                            alertForMatchYes();
+                                          } else {
+                                            widget.socket
+                                                .emit("decision_answer", {
+                                              "userId": widget.myId,
+                                              "answer": "yes",
+                                              "bot": false,
+                                              "conversationId": conversationId
+                                            });
                                           }
+
+                                          setState(() {
+                                            decisionTime = false;
+                                            decisionTimeForBot = false;
+                                          });
+                                          alertForMatchYes();
                                         },
                                         child: Container(
                                             decoration: BoxDecoration(
@@ -584,14 +644,14 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                                                 SizedBox(
                                                   width: 8,
                                                 ),
-                                                Text(
-                                                  "(${userForFires!.coins.toString()})",
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
+                                                // Text(
+                                                //   "(${userForFires!.coins.toString()})",
+                                                //   style: TextStyle(
+                                                //       color: Colors.white,
+                                                //       fontSize: 16,
+                                                //       fontWeight:
+                                                //           FontWeight.bold),
+                                                // )
                                               ],
                                             )),
                                       ),
@@ -617,64 +677,64 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                                       )
                                     ],
                                   ),
-                                  if (showBuyMoreFireinMatchPrompt)
-                                    SizedBox(
-                                      height: 24,
-                                    ),
-                                  if (showBuyMoreFireinMatchPrompt)
-                                    InkWell(
-                                      onTap: () {
-                                        if (!mounted) return;
-                                        Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    WalletPage()));
-                                      },
-                                      child: Container(
-                                          width: 220,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                              color: Colors.yellow,
-                                              borderRadius:
-                                                  BorderRadius.circular(20)),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text("Want more Fires?",
-                                                  style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              SizedBox(
-                                                width: 8,
-                                              ),
-                                              Image.asset(
-                                                "assets/fire.png",
-                                                height: 20,
-                                                width: 20,
-                                              )
-                                            ],
-                                          )),
-                                    ),
-                                  if (showBuyMoreFireinMatchPrompt)
-                                    SizedBox(
-                                      height: 8,
-                                    ),
-                                  if (showBuyMoreFireinMatchPrompt)
-                                    Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(
-                                        "You need more Fires to match!",
-                                        style: TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    )
+                                  // if (showBuyMoreFireinMatchPrompt)
+                                  //   SizedBox(
+                                  //     height: 24,
+                                  //   ),
+                                  // if (showBuyMoreFireinMatchPrompt)
+                                  //   InkWell(
+                                  //     onTap: () {
+                                  //       if (!mounted) return;
+                                  //       Navigator.of(context).pushReplacement(
+                                  //           MaterialPageRoute(
+                                  //               builder: (context) =>
+                                  //                   WalletPage()));
+                                  //     },
+                                  //     child: Container(
+                                  //         width: 220,
+                                  //         height: 40,
+                                  //         decoration: BoxDecoration(
+                                  //             color: Colors.yellow,
+                                  //             borderRadius:
+                                  //                 BorderRadius.circular(20)),
+                                  //         child: Row(
+                                  //           crossAxisAlignment:
+                                  //               CrossAxisAlignment.center,
+                                  //           mainAxisAlignment:
+                                  //               MainAxisAlignment.center,
+                                  //           children: [
+                                  //             Text("Want more Fires?",
+                                  //                 style: TextStyle(
+                                  //                     color: Colors.black,
+                                  //                     fontSize: 16,
+                                  //                     fontWeight:
+                                  //                         FontWeight.bold)),
+                                  //             SizedBox(
+                                  //               width: 8,
+                                  //             ),
+                                  //             Image.asset(
+                                  //               "assets/fire.png",
+                                  //               height: 20,
+                                  //               width: 20,
+                                  //             )
+                                  //           ],
+                                  //         )),
+                                  //   ),
+                                  // if (showBuyMoreFireinMatchPrompt)
+                                  //   SizedBox(
+                                  //     height: 8,
+                                  //   ),
+                                  // if (showBuyMoreFireinMatchPrompt)
+                                  //   Padding(
+                                  //     padding: const EdgeInsets.all(4.0),
+                                  //     child: Text(
+                                  //       "You need more Fires to match!",
+                                  //       style: TextStyle(
+                                  //           color: Colors.red,
+                                  //           fontSize: 16,
+                                  //           fontWeight: FontWeight.bold),
+                                  //     ),
+                                  //   )
                                 ],
                               ),
                             ),
@@ -716,7 +776,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           "peerId": widget.partnerId,
           "fcmTokens": userModel!.fcmToken,
           "interestedGender": userModel!.interestedGender,
-          "myId": widget.myId
+          "myId": widget.myId,
+          "username": widget.username
         });
 
         if (messageApiCount <= 1) {
@@ -726,13 +787,13 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           if (isConversationMade == "null") {
             if (widget.isBot) {
               var conId = await MessagesAPI().createConversation(message, time,
-                  widget.partnerId, widget.myId, imagepath, "true");
+                  widget.partnerId, widget.myId, imagepath, "true", "seen");
               setState(() {
                 conversationId = conId;
               });
             } else {
               var conId = await MessagesAPI().createConversation(message, time,
-                  widget.partnerId, widget.myId, imagepath, "false");
+                  widget.partnerId, widget.myId, imagepath, "false", "seen");
               setState(() {
                 conversationId = conId;
               });
@@ -781,7 +842,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
               .getConversationId(widget.myId, widget.partnerId);
           if (isConversationMade == "null") {
             var conId = await MessagesAPI().createConversation(message, time,
-                widget.myId, widget.partnerId, imagepath, "true");
+                widget.myId, widget.partnerId, imagepath, "true", "seen");
             if (mounted) {
               setState(() {
                 conversationId = conId;
@@ -879,7 +940,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     });
 
     widget.socket.on("role_reverse", (data) {
-      print("role reversing here");
+      print("role reversing here , ${data["role"]}");
       if (mounted) {
         setState(() {
           role = data["role"];
@@ -899,12 +960,14 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     });
 
     widget.socket.on("match_result", (data) async {
-      await OnBoardConnection().updateUserFires(-1, userModel!.id);
       print("mtach result is here");
 
       if (data["matched"]) {
-        await BotUserAPI().updateBot(widget.myId, widget.partnerId);
-        await BotStatusApi().createBotStatus(widget.myId, widget.partnerId);
+        if (widget.isBot) {
+          print("yay bottttts u matched");
+          await BotUserAPI().updateBot(widget.myId, widget.partnerId);
+          await BotStatusApi().createBotStatus(widget.myId, widget.partnerId);
+        }
 
         print("yayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy u matched");
 
@@ -991,11 +1054,19 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
     showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Sorry!"),
-            content: Text("The other person has left the chat Room"),
-            actions: [okButton],
+          return WillPopScope(
+            onWillPop: () async {
+              deleteConversationFirst();
+              Navigator.of(context).pop();
+              return true;
+            },
+            child: AlertDialog(
+              title: Text("Sorry!"),
+              content: Text("The other person has left the chat Room"),
+              actions: [okButton],
+            ),
           );
         });
   }

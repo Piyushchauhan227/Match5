@@ -10,6 +10,7 @@ class MessageCard extends StatefulWidget {
       required this.notReadIndicator,
       required this.profilePic,
       required this.path,
+      required this.status,
       super.key});
 
   final String name;
@@ -19,6 +20,7 @@ class MessageCard extends StatefulWidget {
   final bool notReadIndicator;
   final String profilePic;
   final String path;
+  final String status;
 
   @override
   State<MessageCard> createState() => _MessageCardState();
@@ -29,7 +31,7 @@ class _MessageCardState extends State<MessageCard> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print(widget.path);
+    print("status is ${widget.status}");
   }
 
   @override
@@ -64,7 +66,10 @@ class _MessageCardState extends State<MessageCard> {
                         child: Text(widget.name,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700)),
+                                fontSize: 17,
+                                fontWeight: widget.status == "sent"
+                                    ? FontWeight.bold
+                                    : FontWeight.w500)),
                       ),
                       Container(
                           width: 150,
@@ -73,7 +78,12 @@ class _MessageCardState extends State<MessageCard> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       fontSize: 13,
-                                      color: Color.fromARGB(200, 51, 51, 51)))
+                                      color: widget.status == "sent"
+                                          ? Colors.black
+                                          : Color.fromARGB(200, 51, 51, 51),
+                                      fontWeight: widget.status == "sent"
+                                          ? FontWeight.bold
+                                          : FontWeight.normal))
                               : Row(
                                   children: [
                                     Icon(
@@ -111,16 +121,25 @@ class _MessageCardState extends State<MessageCard> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        // Icon(
-                        //   Icons.circle,
-                        //   color: Colors.red,
-                        //   size: 14,
-                        // ),
+                        if (widget.status == "sent")
+                          Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: Icon(
+                              Icons.circle,
+                              color: Colors.blue,
+                              size: 10,
+                            ),
+                          ),
                         Text(
                           widget.time,
                           style: TextStyle(
                               fontSize: 12,
-                              color: Color.fromARGB(200, 51, 51, 51)),
+                              color: widget.status == "sent"
+                                  ? Colors.black
+                                  : Color.fromARGB(200, 51, 51, 51),
+                              fontWeight: widget.status == "sent"
+                                  ? FontWeight.bold
+                                  : FontWeight.normal),
                         )
                       ],
                     ),

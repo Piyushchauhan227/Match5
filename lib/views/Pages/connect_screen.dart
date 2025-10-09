@@ -10,6 +10,7 @@ import 'package:match5/Services/socket_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/questions.dart';
 import 'package:match5/views/Pages/individual_chat_page.dart';
+import 'package:match5/views/onBoardScreens/username.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'package:match5/Provider/user_provider.dart';
@@ -262,7 +263,26 @@ class _ConnectScreenState extends State<ConnectScreen>
       });
     } else {
       //create a new bot here
-      var userName = generateRandomName();
+      var userName = "UG";
+      if (user!.interestedGender == "Female") {
+        print("femaee");
+        userName = generateRandomNameFemale();
+      } else if (user!.interestedGender == "Male") {
+        print("maleee");
+        userName = generateRandomNameMale();
+      } else {
+        var random = Random();
+        print("else mein");
+        var topick = random.nextBool();
+        if (topick) {
+          print("maleee random $topick");
+          userName = generateRandomNameFemale();
+        } else {
+          print("female random $topick");
+          userName = generateRandomNameMale();
+        }
+      }
+
       print("checking conect screen botstatus creation  at else${user!.id}");
       var newBot = await BotUserAPI()
           .createBot(userName, user!.interestedGender, user!.gender);

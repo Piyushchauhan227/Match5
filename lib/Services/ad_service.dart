@@ -5,6 +5,8 @@ import 'package:match5/const.dart';
 class AdService {
   InterstitialAd? _interstitialAd;
   bool isInterstitialLoaded = false;
+  RewardedAd? rewardedAd;
+  bool isRewardedLoaded = false;
 
   Future<void> init() async {
     await MobileAds.instance.initialize();
@@ -79,5 +81,55 @@ class AdService {
 
   void disposeInterstitial() {
     _interstitialAd?.dispose();
+  }
+
+  void loadRewardedAd() {
+    print("rewaRD LOADED");
+    if (isRewardedLoaded || rewardedAd != null) return;
+    isRewardedLoaded = true;
+
+    RewardedAd.load(
+        adUnitId: REWARD_AD_UNIT,
+        request: const AdRequest(),
+        rewardedAdLoadCallback:
+            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+          print("✅ Rewarded Ad Loaded");
+          rewardedAd = ad;
+          isRewardedLoaded = false;
+        }, onAdFailedToLoad: (LoadAdError error) {
+          print("❌ Failed to load rewarded ad: $error");
+          rewardedAd = null;
+          isRewardedLoaded = false;
+        }));
+  }
+
+  void showRewardedAd(
+      {Function()? onUserReward, Function()? rewardStillLoading}) {
+    if (rewardedAd != null) {
+      rewardedAd!.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+        print("🎁 User earned: ${reward.amount} ${reward.type}");
+        //addToDb();
+
+        onUserReward!();
+      });
+
+      // Dispose old ad and load a new one
+      rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (RewardedAd ad) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+      );
+
+      rewardedAd = null;
+    } else if (isRewardedLoaded) {
+      print("try this mate");
+      rewardStillLoading!();
+    }
   }
 }

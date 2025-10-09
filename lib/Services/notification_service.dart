@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -25,14 +26,24 @@ class NotificationService {
 
     currentToken = token;
 
-    if (token == null) {
-      currentToken = await _firebaseMessaging.getToken();
-      await Helper.saveFCMToken(currentToken!);
-      await Helper.savePreviousFCMToken(currentToken);
-      print("tetins $currentToken");
+    if (token == null || token == "") {
+      try {
+        currentToken = await _firebaseMessaging.getToken();
+        if (currentToken != null && currentToken.isNotEmpty) {
+          await Helper.saveFCMToken(currentToken);
+          await Helper.savePreviousFCMToken(currentToken);
+          print("tetins $currentToken");
+        } else {
+          debugPrint("⚠️ FCM token is null");
+        }
+      } catch (e, st) {
+        debugPrint("❌ Failed to get FCM token: $e");
+        FirebaseCrashlytics.instance
+            .recordError(e, st, reason: "FCM getToken failed");
+      }
     }
 
-    if (currentToken != null) {
+    if (currentToken != null && currentToken.isNotEmpty) {
       await _firebaseMessaging.subscribeToTopic("all_users");
       print("Subscribed to topic: all_users $token");
     }
@@ -105,6 +116,7 @@ class NotificationService {
               isBot: payload["isBot"],
               token: tokens,
               isItcomingFromMessagePage: false,
+              comingFromAd: true,
             )));
   }
 

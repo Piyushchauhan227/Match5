@@ -46,6 +46,11 @@ class _MessagesPageState extends State<MessagesPage> {
       print("ye to chla mate hai ye mate");
       getMessages();
     });
+
+    Future.microtask(() {
+      Provider.of<MessageListProvider>(context, listen: false)
+          .setMessageIndicator(false);
+    });
   }
 
   @override
@@ -127,7 +132,8 @@ class _MessagesPageState extends State<MessagesPage> {
                               date: listFromDB[index]["date"],
                               notReadIndicator: notReadIndicator,
                               profilePic: listFromDB[index]["userProfile"],
-                              path: listFromDB[index]["path"]),
+                              path: listFromDB[index]["path"],
+                              status: listFromDB[index]["status"] ?? ""),
                         );
                       }))
         ],

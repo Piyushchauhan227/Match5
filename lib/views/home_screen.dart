@@ -1,13 +1,16 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Services/notification_service.dart';
 import 'package:match5/utils/login_helper.dart';
 import 'package:match5/views/Pages/navbar/home_page.dart';
 import 'package:match5/views/Pages/navbar/messages_page.dart';
 import 'package:match5/views/Pages/navbar/notification_page.dart';
 import 'package:match5/views/Pages/navbar/settings_page.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({required this.user, super.key});
@@ -28,14 +31,16 @@ class _HomeScreenState extends State<HomeScreen> {
     getFCMTokenDetails();
     _checkPermissions();
     super.initState();
+    getMessageList();
   }
 
   @override
   Widget build(BuildContext context) {
+    var hasNewMessage =
+        Provider.of<MessageListProvider>(context, listen: true).hasNewMessage;
+
     List<Widget> pagesList = [
-      HomePage(
-        user: widget.user,
-      ),
+      HomePage(),
       MessagesPage(
         myUsername: widget.user,
       ),
@@ -51,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedFontSize: 0,
           unselectedFontSize: 0,
           currentIndex: currentPage,
-          selectedLabelStyle: const TextStyle(fontSize: 12),
+          selectedLabelStyle: const TextStyle(fontSize: 12, color: Colors.red),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
           elevation: 20,
           selectedItemColor: Theme.of(context).colorScheme.secondary,
@@ -61,13 +66,34 @@ class _HomeScreenState extends State<HomeScreen> {
               currentPage = value;
             });
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: "Home",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.message),
+              icon: Stack(
+                children: [
+                  Icon(
+                    Icons.message,
+                    color: hasNewMessage
+                        ? const Color.fromARGB(255, 232, 122, 114)
+                        : null,
+                  ),
+                  if (hasNewMessage)
+                    Positioned(
+                      top: 0,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    )
+                ],
+              ),
               label: "Messages",
             ),
             BottomNavigationBarItem(
@@ -120,5 +146,14 @@ class _HomeScreenState extends State<HomeScreen> {
         await NotificationService.askForPermissions();
         break;
     }
+  }
+
+  void getMessageList() async {
+    var list = await MessagesAPI().getSentByMessages(widget.user.id);
+    print("this doens work?  $list");
+    if (!mounted) return;
+    Provider.of<MessageListProvider>(context, listen: false).setList(list);
+    Provider.of<MessageListProvider>(context, listen: false)
+        .getMessageIndicator();
   }
 }

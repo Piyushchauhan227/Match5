@@ -44,6 +44,7 @@ class IndividualLoadedChat extends StatefulWidget {
       required this.isBot,
       required this.token,
       required this.isItcomingFromMessagePage,
+      this.comingFromAd,
       super.key});
 
   final String username;
@@ -54,6 +55,7 @@ class IndividualLoadedChat extends StatefulWidget {
   final String profilePic;
   final String isBot;
   final List<dynamic> token;
+  final bool? comingFromAd;
 
   @override
   State<IndividualLoadedChat> createState() => _IndividualLoadedChatState();
@@ -84,8 +86,14 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     WidgetsBinding.instance.addObserver(this);
     super.initState();
     //initializing interstitial ad;
-    if (widget.isItcomingFromMessagePage == false) {
+    print(
+        "botting checkig hai ${widget.isBot} and cming from ad is ${widget.comingFromAd}");
+    if (widget.isItcomingFromMessagePage == false &&
+        (widget.comingFromAd == false || widget.comingFromAd == null)) {
+      print("hun chal ad");
       adService.loadInterstitialAndShow();
+    } else {
+      print("hje ni legenda");
     }
     checkBlockingAtFirst();
     getConversation(page);
@@ -472,7 +480,8 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
               imagepath,
               widget.isBot,
               myUserModel!.userProfile,
-              widget.myId);
+              widget.myId,
+              "chat");
           print("han bhai");
         }
 
@@ -670,7 +679,8 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
             path,
             widget.isBot,
             myUserModel!.userProfile,
-            widget.myId);
+            widget.myId,
+            "chat");
       }
 
       Navigator.of(context).pop();
@@ -841,6 +851,12 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     // }
 
     connect();
+
+    Provider.of<MessageListProvider>(context, listen: false)
+        .changeStatus(conversationId);
+
+    Provider.of<MessageListProvider>(context, listen: false)
+        .getMessageIndicator();
   }
 
   void disconnectSocket() {

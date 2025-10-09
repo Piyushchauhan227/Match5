@@ -59,7 +59,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => MessageListProvider()),
         ChangeNotifierProvider(create: (context) => NotificationProvider()),
-        ChangeNotifierProvider(create: (context) => AnalyticsProvider())
+        ChangeNotifierProvider(create: (context) => AnalyticsProvider()),
       ],
       child: MainApp(),
     ));
@@ -100,6 +100,7 @@ class _MainAppState extends State<MainApp> {
                   isBot: payload["isBot"],
                   token: tokens,
                   isItcomingFromMessagePage: false,
+                  comingFromAd: true,
                 )));
       }
     });
@@ -109,6 +110,15 @@ class _MainAppState extends State<MainApp> {
       String payloadData = jsonEncode(message.data);
 
       if (message.notification != null) {
+        if (message.data["type"] == "chat") {
+          print("checking noti ethe e aa");
+          Provider.of<MessageListProvider>(context, listen: false)
+              .setMessageIndicator(true);
+        } else {
+          print("tatte");
+        }
+        //setting provider to true so that it can show a indicator
+
         NotificationService.showSimpleNotification(
             title: message.notification!.title!,
             body: message.notification!.body!,
@@ -164,6 +174,7 @@ class _MainAppState extends State<MainApp> {
                   isBot: payload["isBot"],
                   token: tokens,
                   isItcomingFromMessagePage: false,
+                  comingFromAd: true,
                 )));
       });
     }

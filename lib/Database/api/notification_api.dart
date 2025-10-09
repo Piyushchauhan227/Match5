@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class NotificationAPI {
   Future<void> notificationSend(otherId, username, messages, conversationId,
-      path, isBot, profilePic, myId) async {
+      path, isBot, profilePic, myId, String type) async {
     try {
       var res = await OnBoardConnection().gettingUserDetails(otherId);
       var tokens = res.user.fcmToken;
@@ -27,7 +27,8 @@ class NotificationAPI {
             "path": path,
             "myId": otherId,
             "isBot": isBot,
-            "profilePic": profilePic
+            "profilePic": profilePic,
+            "type": type
           }));
 
       var resData = jsonDecode(response.body);

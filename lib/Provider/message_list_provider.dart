@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class MessageListProvider with ChangeNotifier {
   List<dynamic> _list = [];
+  bool hasNewMessage = false;
 
   List<dynamic>? get listFromDb => _list;
 
@@ -26,5 +27,30 @@ class MessageListProvider with ChangeNotifier {
       _list.insert(0, updated);
       notifyListeners();
     }
+  }
+
+  void changeStatus(conversationId) {
+    print("change status mein $conversationId");
+
+    final index = _list.indexWhere((c) => c["id"] == conversationId);
+    if (index != -1) {
+      _list[index]["status"] = "seen";
+    }
+    notifyListeners();
+  }
+
+  void setMessageIndicator(bool value) {
+    hasNewMessage = value;
+    notifyListeners();
+  }
+
+  void getMessageIndicator() {
+    final index = _list.indexWhere((c) => c["status"] == "sent");
+    if (index != -1) {
+      hasNewMessage = true;
+    } else {
+      hasNewMessage = false;
+    }
+    notifyListeners();
   }
 }
