@@ -20,11 +20,25 @@ android/.gradle/
 *.zip
 *.mp4
 
-
-android/.gradle/
-android/app/build/
+# Android
+**/android/app/build/
+**/android/.gradle/
+**/android/.idea/
+**/android/local.properties
+**/android/app/intermediates/
+**/android/app/outputs/
+**/android/app/release/
+**/android/app/debug/
+**/.cxx/
 android/app/.cxx/
 
+# iOS / macOS
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/.symlinks/
+**/ios/Pods/
+**/macos/Pods/
+**/macos/.symlinks/
 # IntelliJ related
 *.iml
 *.ipr

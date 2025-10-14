@@ -36,9 +36,7 @@ class _WalletPageState extends State<WalletPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // loadRewardedAd();
-
-    // loadUnityAds();
+    AdService().loadRewardedAd();
     if (!mounted) return;
     iapService.initialize().then((_) => {
           setState(() {
@@ -46,6 +44,7 @@ class _WalletPageState extends State<WalletPage> {
             print("Products fetched: $products");
           })
         });
+    if (!mounted) return;
     user = Provider.of<UserProvider>(context, listen: false);
     iapService.setUserProvider(user!);
   }
@@ -207,15 +206,6 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-  // void initUnity() async {
-  //   await UnityAds.init(
-  //     gameId: '5955869',
-  //     testMode: true, // or false depending on what you set
-  //     onComplete: () => print('✅ Unity Ads initialized'),
-  //     onFailed: (error, message) => print('❌ Unity Init Failed: $message'),
-  //   );
-  // }
-
   Future<void> addToDb() async {
     if (!mounted) return;
 
@@ -239,10 +229,29 @@ class _WalletPageState extends State<WalletPage> {
     AdService().showRewardedAd(onUserReward: () {
       print("loaded and showing now");
       addToDb();
-    }, rewardStillLoading: (network) {
+    }, rewardStillLoading: (network) async {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Ad not ready yet please try again later...")));
+      showDialog(
+        context: context,
+        barrierDismissible: false, // user can't dismiss manually
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Colors.yellow),
+        ),
+      );
+      while (AdService().isRewardedLoaded) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      AdService().showRewardedAd(onUserReward: () {
+        print("loaded and showing now");
+        addToDb();
+      });
+    }, ifFailed: () {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text("No Ads available at the moment, please try again later")));
     });
   }
 }

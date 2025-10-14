@@ -501,6 +501,11 @@ class __pulsePlayState extends State<_pulsePlay>
                 );
               }
             }
+          }, ifFailed: () {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(
+                    "No Ads available at the moment, please try again later")));
           });
         },
         icon: const Icon(

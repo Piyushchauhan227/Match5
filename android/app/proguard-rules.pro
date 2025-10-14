@@ -1,0 +1,6 @@
+-keep class androidx.window.** { *; }
+-dontwarn androidx.window.**
+-keep class androidx.window.extensions.** { *; }
+-keep class androidx.window.sidecar.** { *; }
+-dontwarn androidx.window.sidecar.**
+-dontwarn android.window.**

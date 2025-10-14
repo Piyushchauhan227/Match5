@@ -38,7 +38,7 @@ class AdService {
           );
         }
 
-        print("✅ AdMob initialized");
+        print("✅ Ads initialized");
       } catch (e) {
         print("⚠️ AdMob init error: $e");
       }
@@ -140,7 +140,8 @@ class AdService {
 
   void showRewardedAd(
       {Function()? onUserReward,
-      Function(String network)? rewardStillLoading}) {
+      Function(String network)? rewardStillLoading,
+      Function()? ifFailed}) {
     if (rewardedAd != null) {
       rewardedAd!.show(
           onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
@@ -186,6 +187,8 @@ class AdService {
           print("failed unity v $error");
         },
       );
+    } else {
+      ifFailed!();
     }
   }
 

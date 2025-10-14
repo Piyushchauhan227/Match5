@@ -78,6 +78,8 @@ dependencies {
 
     //fb sdk
     implementation 'com.facebook.android:facebook-android-sdk:[8,9)'
+
+     implementation "androidx.window:window:1.2.0"
     
 }
 

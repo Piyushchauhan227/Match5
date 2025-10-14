@@ -28,39 +28,41 @@ class OnBoardConnection {
   }
 
   //post method for login
-  Future<LoginResultEnd> loginInMongo(email) async {
-    var url = Uri.parse('$BASE_URL/user/login');
-    var response = await http.post(url, body: {'email': email});
-    var resData = jsonDecode(response.body);
-    if (response.statusCode == 400) {
-      return LoginResultEnd(
-          result: response.statusCode,
-          user: UserModel(
-              id: "",
-              name: "",
-              email: "",
-              gender: "",
-              interestedGender: "",
-              username: "",
-              fcmToken: [],
-              coins: -1,
-              userProfile: "",
-              about: ""));
-    } else {
-      return LoginResultEnd(
-          result: response.statusCode,
-          user: UserModel(
-              id: resData["id"],
-              name: resData["name"],
-              email: resData["email"],
-              gender: resData["gender"],
-              interestedGender: resData["interestedGender"],
-              username: resData["username"],
-              fcmToken: resData["fcmToken"],
-              coins: resData["coins"],
-              userProfile: resData["userProfile"],
-              about: resData["about"]));
-    }
+  Future<dynamic> loginInMongo(email) async {
+    try {
+      var url = Uri.parse('$BASE_URL/user/login');
+      var response = await http.post(url, body: {'email': email});
+      var resData = jsonDecode(response.body);
+      if (response.statusCode == 400) {
+        return LoginResultEnd(
+            result: response.statusCode,
+            user: UserModel(
+                id: "",
+                name: "",
+                email: "",
+                gender: "",
+                interestedGender: "",
+                username: "",
+                fcmToken: [],
+                coins: -1,
+                userProfile: "",
+                about: ""));
+      } else {
+        return LoginResultEnd(
+            result: response.statusCode,
+            user: UserModel(
+                id: resData["id"],
+                name: resData["name"],
+                email: resData["email"],
+                gender: resData["gender"],
+                interestedGender: resData["interestedGender"],
+                username: resData["username"],
+                fcmToken: resData["fcmToken"],
+                coins: resData["coins"],
+                userProfile: resData["userProfile"],
+                about: resData["about"]));
+      }
+    } catch (e) {}
   }
 
   //post method for getting user details
