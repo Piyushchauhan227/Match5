@@ -19,7 +19,7 @@ class AuthService {
       // Once signed in, return the UserCredential
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (e) {
-      print(e.toString());
+      print("google error signin ${e.toString()}");
     }
     return null;
   }
