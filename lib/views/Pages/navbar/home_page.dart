@@ -266,7 +266,8 @@ class _HomePageState extends State<HomePage> {
                         } else {
                           print("do bari");
                           provider.decreaseFires();
-                          await OnBoardConnection().updateUserFires(-1, user);
+                          await OnBoardConnection()
+                              .updateUserFires(-1, user.id);
 
                           if (!mounted) return;
                           Navigator.of(context).push(MaterialPageRoute(
