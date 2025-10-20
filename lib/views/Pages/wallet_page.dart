@@ -218,6 +218,7 @@ class _WalletPageState extends State<WalletPage> {
     );
     // Auto close after 1.5 seconds
     Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
       Navigator.of(context).pop();
     });
   }

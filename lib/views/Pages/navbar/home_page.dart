@@ -55,8 +55,6 @@ class _HomePageState extends State<HomePage> {
     var userProvider = Provider.of<UserProvider>(context, listen: false);
     iapService.restorePurchases();
     iapService.setUserProvider(userProvider);
-
-    loadRewardAd();
   }
 
   @override

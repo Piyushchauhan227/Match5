@@ -96,6 +96,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         AdService().loadInterstitialAndShow();
       } else {
         print("hje ni legenda");
+        AdService().loadInterstitialAndShow();
       }
     });
 
