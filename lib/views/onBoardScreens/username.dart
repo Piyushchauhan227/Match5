@@ -141,6 +141,10 @@ class _UsernameState extends State<Username> {
               right: 20,
               child: FloatingActionButton(
                 onPressed: () async {
+                  if (!mounted) return;
+                  final userProvider =
+                      Provider.of<UserProvider>(context, listen: false);
+
                   var random = Random();
                   var picnmbr = random.nextInt(27) + 1;
                   var picname = "pic_${picnmbr}.png";
@@ -161,15 +165,15 @@ class _UsernameState extends State<Username> {
                         print("200 ayaa");
 
                         final userData = onValue.user;
-                        if (userData != null) {
-                          Provider.of<UserProvider>(context, listen: false)
-                              .setUser(userData);
-                        } else {
+                        if (userData == null) {
                           debugPrint(
                               "⚠️ onValue.user is null — skipping setUser");
+                        } else {
+                          userProvider.setUser(userData);
                         }
 
                         // await NotificationService.askForPermissions();
+                        if (!mounted) return;
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
                               builder: (builder) => HomeScreen(

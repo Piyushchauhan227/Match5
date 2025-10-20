@@ -37,7 +37,27 @@ List<String> softQuestions = [
   "🎯😈 Truth or dare: which would you pick first?",
   "📸🫣 Ever taken a selfie you regretted sending?",
   "🛏️💤 Nap together or separate?",
-  "🕺💃 Have you ever flirted while dancing?"
+  "🕺💃 Have you ever flirted while dancing?",
+  "😈🔥 Ever hooked up with someone you weren’t supposed to?",
+  "🫣💋 What’s your biggest turn-on that most people wouldn’t guess?",
+  "💦🙈 What’s the wildest place you’ve made out?",
+  "👀💭 What’s your most dangerous fantasy?",
+  "🫶🕯️ Ever had a crush on someone older?",
+  "🫣📸 Ever sent a photo that made your heart race after hitting send?",
+  "😏🛏️ What’s your favorite thing someone can whisper in your ear?",
+  "🔥🍑 What’s one thing that instantly gets you in the mood?",
+  "🥵⏰ What’s the longest you’ve gone without it?",
+  "💋🤫 If your ex texted you right now, would you reply?",
+  "🍷🖤 Have you ever kissed someone you didn’t actually like?",
+  "👄😳 How good of a kisser do you think you are — be honest?",
+  "🫢🔥 Have you ever lied to make someone like you more?",
+  "🕯️💞 What’s your most romantic-but-naughty memory?",
+  "👀💌 What body part do you secretly love getting compliments on?",
+  "🥂😉 Ever had a one-night fling and wished it lasted longer?",
+  "😈🛋️ Ever fantasized about someone you shouldn’t have?",
+  "💃🫦 If we were playing dares — what would you dare me to do?",
+  "🔥🫣 Ever woken up somewhere and thought, ‘how did I get here?’",
+  "💌🥵 What’s something flirty you’ve always wanted to try but haven’t yet?"
 ];
 
 List<String> hardQuestions = [

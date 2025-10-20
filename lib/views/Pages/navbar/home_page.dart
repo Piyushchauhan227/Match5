@@ -5,6 +5,7 @@ import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Services/ad_service.dart';
 import 'package:match5/const.dart';
+import 'package:match5/main.dart';
 import 'package:match5/utils/login_helper.dart';
 import 'package:match5/views/Pages/user_profile.dart';
 import 'package:match5/views/Pages/connect_screen.dart';
@@ -51,6 +52,9 @@ class _HomePageState extends State<HomePage> {
     //getFCMTokenDetails();
 
     super.initState();
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
+    iapService.restorePurchases();
+    iapService.setUserProvider(userProvider);
 
     loadRewardAd();
   }
@@ -119,6 +123,11 @@ class _HomePageState extends State<HomePage> {
                               child: Image.network(
                                 '$BASE_URL/profile_pics/${user.userProfile}',
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print("⚠️ Image load failed: $error");
+                                  return const Icon(Icons.person,
+                                      size: 48, color: Colors.grey);
+                                },
                                 width: 55,
                                 height: 55,
                               ),
@@ -269,7 +278,7 @@ class _HomePageState extends State<HomePage> {
                           await OnBoardConnection()
                               .updateUserFires(-1, user.id);
 
-                          if (!mounted) return;
+                          if (!mounted || !context.mounted) return;
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (builder) => ConnectScreen(
                                     typeOfGame: title,

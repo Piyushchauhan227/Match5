@@ -13,6 +13,7 @@ import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Provider/notification_provider.dart';
 import 'package:match5/Provider/user_provider.dart';
+import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/Services/ad_service.dart';
 import 'package:match5/Services/connectivity_service.dart';
 import 'package:match5/Services/notification_service.dart';
@@ -32,14 +33,14 @@ Future _firebaseBackgroundMessage(RemoteMessage message) async {
   }
 }
 
+final IapService iapService = IapService();
+
 void main() async {
   //initializing app
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    //initialize admob
-    Future.delayed(const Duration(milliseconds: 300), () {
-      AdService().init();
-    });
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
 
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -57,6 +58,13 @@ void main() async {
 //initialize local notifications
     await NotificationService.localInit();
 
+    //initialize admob
+    Future.delayed(const Duration(milliseconds: 300), () {
+      AdService().init();
+    });
+
+    //iap subscription
+
     runApp(MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
@@ -69,6 +77,8 @@ void main() async {
   }, (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
   });
+
+  await iapService.initialize();
 }
 
 class MainApp extends StatefulWidget {
@@ -85,8 +95,6 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
 
     //on background notification tapped
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {

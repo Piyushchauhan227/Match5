@@ -38,12 +38,10 @@ class _WalletPageState extends State<WalletPage> {
     super.initState();
     AdService().loadRewardedAd();
     if (!mounted) return;
-    iapService.initialize().then((_) => {
-          setState(() {
-            products = iapService.products;
-            print("Products fetched: $products");
-          })
-        });
+
+    products = iapService.products;
+    print("Products fetched: $products");
+
     if (!mounted) return;
     user = Provider.of<UserProvider>(context, listen: false);
     iapService.setUserProvider(user!);
@@ -51,7 +49,6 @@ class _WalletPageState extends State<WalletPage> {
 
   @override
   void dispose() {
-    iapService.dispose();
     _rewardedAd?.dispose();
     super.dispose();
   }

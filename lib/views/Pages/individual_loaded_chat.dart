@@ -88,13 +88,17 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     //initializing interstitial ad;
     print(
         "botting checkig hai ${widget.isBot} and cming from ad is ${widget.comingFromAd}");
-    if (widget.isItcomingFromMessagePage == false &&
-        (widget.comingFromAd == false || widget.comingFromAd == null)) {
-      print("hun chal ad");
-      AdService().loadInterstitialAndShow();
-    } else {
-      print("hje ni legenda");
-    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isItcomingFromMessagePage == false &&
+          (widget.comingFromAd == false || widget.comingFromAd == null)) {
+        print("hun chal ad");
+        AdService().loadInterstitialAndShow();
+      } else {
+        print("hje ni legenda");
+      }
+    });
+
     checkBlockingAtFirst();
     getConversation(page);
     print("ddddddddddd");

@@ -272,8 +272,8 @@ class _LoginscreenState extends State<Loginscreen> {
         print("res");
         var res = await OnBoardConnection().loginInMongo(email);
 
-        print(res.user.id);
-        if (res.result == 200) {
+        //print(res.user.id);
+        if (res?.result == 200) {
           await Helper.saveLoginInfo();
           await Helper.saveLoginId(res.user.id);
           if (!mounted) return;

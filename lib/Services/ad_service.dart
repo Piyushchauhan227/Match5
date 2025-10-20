@@ -244,19 +244,25 @@ class AdService {
         print("✅ Unity Interstitial completed");
 
         isUnityInterstitialLoaded = false;
-        loadInterstitialAd(); // preload next
+        Future.delayed(Duration(seconds: 1), () {
+          loadInterstitialAd(); // preload next
+        });
       },
       onSkipped: (placementId) {
         print("⚠️ Unity Interstitial skipped");
 
         isUnityInterstitialLoaded = false;
-        loadInterstitialAd();
+        Future.delayed(Duration(seconds: 1), () {
+          loadInterstitialAd(); // preload next
+        });
       },
       onFailed: (placementId, error, message) {
         print("❌ Unity Interstitial failed to show: $error - $message");
 
         isUnityInterstitialLoaded = false;
-        loadInterstitialAd();
+        Future.delayed(Duration(seconds: 1), () {
+          loadInterstitialAd(); // preload next
+        });
       },
     );
   }

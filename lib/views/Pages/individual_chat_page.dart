@@ -80,6 +80,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   var timeLeft = 10;
   bool timerStart = false;
   bool alreadyPoppedNoNeedForMatchResult = false;
+  bool chatAlreadyCanceled = false;
   // bool showBuyMoreFireinMatchPrompt = false;
 
   @override
@@ -941,7 +942,9 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
     widget.socket.on("chat_end", (data) {
       print("chatcanel true hi u");
-      alertForChatCancel();
+      if (!chatAlreadyCanceled) {
+        alertForChatCancel();
+      }
     });
 
     widget.socket.on("role_reverse", (data) {
@@ -1044,6 +1047,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
   void alertForChatCancel() {
     showAlerts = true;
+    chatAlreadyCanceled = true;
     print("oko");
     if (!mounted) return;
     Widget okButton = TextButton(
@@ -1064,6 +1068,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           return WillPopScope(
             onWillPop: () async {
               deleteConversationFirst();
+              if (!mounted) return false;
+              Navigator.of(context).pop();
               Navigator.of(context).pop();
               return true;
             },

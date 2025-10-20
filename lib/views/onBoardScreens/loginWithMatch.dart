@@ -197,8 +197,8 @@ class _LoginWithMatchState extends State<LoginWithMatch> {
       if (cred != null) {
         var res = await OnBoardConnection().loginInMongo(email.text.trim());
 
-        print(res.user.id);
-        if (res.result == 200) {
+        //print(res.user.id);
+        if (res?.result == 200) {
           await Helper.saveLoginInfo();
           await Helper.saveLoginId(res.user.id);
 
