@@ -109,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     var prevfcmToken = await Helper.getPreviousFCMToken();
     print(widget.user.email);
-    print("in between didsa$fcmToken and prev $prevfcmToken");
+    print(
+        "in between didsa$fcmToken and prev $prevfcmToken and user id is ${widget.user.id}");
     print("${widget.user!.fcmToken} and shared pref token is $fcmToken");
 
     if (!widget.user.fcmToken.contains(fcmToken)) {
@@ -120,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await OnBoardConnection()
             .updateAndDeleteFCMToken(widget.user.id, fcmToken, prevfcmToken);
       } else {
-        print("g");
+        print("gandu");
         //just update
         await OnBoardConnection().updateFCM(widget.user.id, fcmToken);
       }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:match5/Models/login_result.dart';
 import 'package:match5/Models/user_model.dart';
@@ -123,13 +124,22 @@ class OnBoardConnection {
   }
 
   Future<void> updateAndDeleteFCMToken(id, newToken, prevToken) async {
-    var url = Uri.parse("$BASE_URL/user/updateAndDeleteFCM");
-    var response = await http.patch(url,
-        body: {"id": id, "newToken": newToken, "prevToken": prevToken});
+    try {
+      var url = Uri.parse("$BASE_URL/user/updateAndDeleteFCM");
+      var response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'id': id.toString(),
+          'newToken': newToken,
+          'prevToken': prevToken,
+        }),
+      );
 
-    var resData = jsonDecode(response.body);
-    print(resData);
-    //return resData["fcmToken"];
+      var resData = jsonDecode(response.body);
+    } catch (e) {
+      debugPrint("error in reg tokens $e");
+    }
   }
 
   Future<void> updateFCM(id, newToken) async {

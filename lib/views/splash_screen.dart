@@ -38,6 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (res != false) {
         if (!mounted) return;
         Provider.of<UserProvider>(context, listen: false).setUser(res.user);
+        print("provider bhi check ho rha hai ${res.user.id}");
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => HomeScreen(user: res.user)),
         );

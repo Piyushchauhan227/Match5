@@ -107,6 +107,10 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     widget.socket.onDisconnect((_) {});
 
     timeStart();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AdService().loadUnityInterstitial();
+    });
   }
 
   @override
@@ -177,6 +181,9 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                     width: 48,
                     height: 48,
                     fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.person);
+                    },
                   ),
                 ),
                 Padding(

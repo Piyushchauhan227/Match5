@@ -27,11 +27,20 @@ class AdService {
 
     Future.microtask(() async {
       try {
-        await MobileAds.instance.initialize();
+        if (!unityOnlyMode) {
+          await MobileAds.instance.initialize();
 
-        final isUnityReady = await UnityAds.isInitialized();
-        print("unity vala scene $isUnityReady");
-        if (!isUnityReady) {
+          final isUnityReady = await UnityAds.isInitialized();
+          print("unity vala scene $isUnityReady");
+          if (!isUnityReady) {
+            await UnityAds.init(
+              gameId: UNITY_GAME_ID,
+              onComplete: () => print('✅ Unity Ads initialized'),
+              onFailed: (error, message) =>
+                  print('❌ Unity Init Failed: $message'),
+            );
+          }
+        } else {
           await UnityAds.init(
             gameId: UNITY_GAME_ID,
             onComplete: () => print('✅ Unity Ads initialized'),
@@ -39,7 +48,6 @@ class AdService {
                 print('❌ Unity Init Failed: $message'),
           );
         }
-
         print("✅ Ads initialized");
       } catch (e) {
         print("⚠️ AdMob init error: $e");
@@ -232,8 +240,6 @@ class AdService {
         print("✅ Unity Interstitial loaded: $placementId");
         isUnityInterstitialLoaded = true;
         isUnityInterstitialLoading = false;
-
-        showUnityInterstitial();
       },
       onFailed: (placementId, error, message) {
         print("❌ Failed to load Unity Interstitial: $error - $message");
@@ -244,39 +250,43 @@ class AdService {
   }
 
   void showUnityInterstitial() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    UnityAds.showVideoAd(
-      placementId: INTERSTITIAL_DIRECT_LOADED_CHAT,
-      onStart: (placementId) {
-        print("🎥 Unity Interstitial started");
-      },
-      onComplete: (placementId) {
-        print("✅ Unity Interstitial completed");
+    if (!isUnityInterstitialLoaded) {
+      loadUnityInterstitial();
+    } else {
+      await Future.delayed(const Duration(milliseconds: 500));
+      UnityAds.showVideoAd(
+        placementId: INTERSTITIAL_DIRECT_LOADED_CHAT,
+        onStart: (placementId) {
+          print("🎥 Unity Interstitial started");
+        },
+        onComplete: (placementId) {
+          print("✅ Unity Interstitial completed");
 
-        isUnityInterstitialLoaded = false;
-        Future.delayed(Duration(seconds: 1), () {
-          //loadInterstitialAd(); // preload next
-          loadUnityInterstitial();
-        });
-      },
-      onSkipped: (placementId) {
-        print("⚠️ Unity Interstitial skipped");
+          isUnityInterstitialLoaded = false;
+          Future.delayed(Duration(seconds: 1), () {
+            //loadInterstitialAd(); // preload next
+            loadUnityInterstitial();
+          });
+        },
+        onSkipped: (placementId) {
+          print("⚠️ Unity Interstitial skipped");
 
-        isUnityInterstitialLoaded = false;
-        Future.delayed(Duration(seconds: 1), () {
-          //loadInterstitialAd(); // preload next
-          loadUnityInterstitial();
-        });
-      },
-      onFailed: (placementId, error, message) {
-        print("❌ Unity Interstitial failed to show: $error - $message");
+          isUnityInterstitialLoaded = false;
+          Future.delayed(Duration(seconds: 1), () {
+            //loadInterstitialAd(); // preload next
+            loadUnityInterstitial();
+          });
+        },
+        onFailed: (placementId, error, message) {
+          print("❌ Unity Interstitial failed to show: $error - $message");
 
-        isUnityInterstitialLoaded = false;
-        Future.delayed(Duration(seconds: 1), () {
-          //loadInterstitialAd(); // preload next
-          loadUnityInterstitial();
-        });
-      },
-    );
+          isUnityInterstitialLoaded = false;
+          Future.delayed(Duration(seconds: 1), () {
+            //loadInterstitialAd(); // preload next
+            loadUnityInterstitial();
+          });
+        },
+      );
+    }
   }
 }

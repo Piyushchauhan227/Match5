@@ -25,7 +25,7 @@ class NotificationService {
     var prevToken = await Helper.getPreviousFCMToken();
 
     currentToken = token;
-
+    print("token he token $currentToken");
     if (token == null || token == "") {
       try {
         currentToken = await _firebaseMessaging.getToken();

@@ -93,7 +93,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
       if (widget.isItcomingFromMessagePage == false &&
           (widget.comingFromAd == false || widget.comingFromAd == null)) {
         print("hun chal ad");
-        AdService().loadInterstitialAndShow();
+        AdService().showUnityInterstitial();
       } else {
         print("hje ni legenda");
       }
