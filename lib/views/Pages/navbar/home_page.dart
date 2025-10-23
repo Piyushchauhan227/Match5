@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Services/ad_service.dart';
 import 'package:match5/const.dart';
@@ -52,10 +53,12 @@ class _HomePageState extends State<HomePage> {
     //getFCMTokenDetails();
 
     super.initState();
-    var userProvider = Provider.of<UserProvider>(context, listen: false);
-    iapService.restorePurchases();
-    iapService.setUserProvider(userProvider);
-    loadRewardAd();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      var userProvider = Provider.of<UserProvider>(context, listen: false);
+      iapService.restorePurchases();
+      iapService.setUserProvider(userProvider);
+      loadRewardAd();
+    });
   }
 
   @override
@@ -397,6 +400,7 @@ class _HomePageState extends State<HomePage> {
 
   void loadRewardAd() async {
     adService.loadRewardedAd();
+    adService.loadInterstitialAd();
   }
 }
 
@@ -453,6 +457,11 @@ class __pulsePlayState extends State<_pulsePlay>
         onPressed: () {
           //Navigator.pop(context);
           // TODO: Show rewarded ad
+          if (!mounted) return;
+          Provider.of<AnalyticsProvider>(context, listen: false)
+              .logEvent("reward_asked_in_home_page", param: {
+            "user_id": user!.user!.id,
+          });
           widget.adService.showRewardedAd(onUserReward: () {
             print("loaded and showing now");
             addToDb();
@@ -474,6 +483,7 @@ class __pulsePlayState extends State<_pulsePlay>
               if (widget.adService.rewardedAd != null) {
                 widget.adService.showRewardedAd(onUserReward: () {
                   print("loaded and showing now");
+
                   addToDb();
                 }); // 👈 now we can show
                 widget.adService.rewardedAd = null;
@@ -536,6 +546,9 @@ class __pulsePlayState extends State<_pulsePlay>
   }
 
   void addToDb() async {
+    if (!mounted) return;
+    Provider.of<AnalyticsProvider>(context, listen: false)
+        .logEvent("reward_given", param: {"user_id": user!.user!.id});
     await OnBoardConnection().updateUserFires(5, user!.user!.id);
     user!.increaseFires();
     showDialog(

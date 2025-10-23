@@ -8,6 +8,8 @@ import 'package:match5/questions.dart';
 import 'package:match5/utils/choose_avatar.dart';
 import 'package:match5/views/home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 //name of the file was Username before now it changed to choose_avattar but not the class name
 class Username extends StatefulWidget {
@@ -151,6 +153,9 @@ class _UsernameState extends State<Username> {
                   print("picnames are here $picname");
 
                   if (!username.text.trim().isEmpty) {
+                    tz.initializeTimeZones();
+                    final localTz = tz.local.name;
+
                     var res = await OnBoardConnection()
                         .updateUser(
                             widget.id,
@@ -158,7 +163,8 @@ class _UsernameState extends State<Username> {
                             widget.interestedGender,
                             username.text.trim(),
                             picname,
-                            "")
+                            "",
+                            localTz)
                         .then((onValue) async {
                       print("then andar");
                       if (onValue.result == 200) {

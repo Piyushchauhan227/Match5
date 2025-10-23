@@ -96,7 +96,7 @@ class OnBoardConnection {
 
   //update user
   Future<LoginResultEnd> updateUser(
-      id, gender, interestedGender, username, userProfile, about) async {
+      id, gender, interestedGender, username, userProfile, about, tz) async {
     var url = Uri.parse('$BASE_URL/user/update');
     var response = await http.patch(url, body: {
       "id": id,
@@ -104,7 +104,8 @@ class OnBoardConnection {
       "interestedGender": interestedGender,
       "username": username,
       "userProfile": userProfile,
-      "about": about
+      "about": about,
+      "tz": tz
     });
     var resData = jsonDecode(response.body);
     print(resData);
@@ -123,7 +124,7 @@ class OnBoardConnection {
             about: resData["about"]));
   }
 
-  Future<void> updateAndDeleteFCMToken(id, newToken, prevToken) async {
+  Future<List<dynamic>> updateAndDeleteFCMToken(id, newToken, prevToken) async {
     try {
       var url = Uri.parse("$BASE_URL/user/updateAndDeleteFCM");
       var response = await http.patch(
@@ -137,12 +138,14 @@ class OnBoardConnection {
       );
 
       var resData = jsonDecode(response.body);
+      return resData["fcmToken"];
     } catch (e) {
       debugPrint("error in reg tokens $e");
+      return [];
     }
   }
 
-  Future<void> updateFCM(id, newToken) async {
+  Future<List<dynamic>> updateFCM(id, newToken) async {
     try {
       var url = Uri.parse("$BASE_URL/user/updateFCM");
       print("urrrls are $id and new tokens are $newToken");
@@ -151,8 +154,9 @@ class OnBoardConnection {
 
       var resData = jsonDecode(response.body);
       print(resData);
+      return resData["fcmToken"];
     } catch (e) {
-      return null;
+      return [];
     }
     // resData["fcmToken"];
   }

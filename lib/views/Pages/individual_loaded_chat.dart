@@ -24,6 +24,7 @@ import 'package:match5/Services/ad_service.dart';
 import 'package:match5/Services/resize_helper.dart';
 import 'package:match5/Services/socket_service.dart';
 import 'package:match5/const.dart';
+import 'package:match5/utils/login_helper.dart';
 import 'package:match5/utils/message_send.dart';
 import 'package:match5/utils/message_with_image.dart';
 import 'package:match5/utils/reply_message.dart';
@@ -87,13 +88,13 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     super.initState();
     //initializing interstitial ad;
     print(
-        "botting checkig hai ${widget.isBot} and cming from ad is ${widget.comingFromAd}");
+        "botting checkig hai ${widget.isBot} and cming from ad is ${widget.comingFromAd} and tokens are ${widget.token}");
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isItcomingFromMessagePage == false &&
           (widget.comingFromAd == false || widget.comingFromAd == null)) {
         print("hun chal ad");
-        AdService().showUnityInterstitial();
+        AdService().showInterstitialAd();
       } else {
         print("hje ni legenda");
       }
@@ -106,7 +107,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     if (!mounted) return;
     myUserModel = Provider.of<UserProvider>(context, listen: false).user;
     print(
-        "profile check krenge ${widget.profilePic} and other id is ${widget.OtherUserId}  and my id is ${myUserModel!.id}");
+        "profile check krenge ${widget.profilePic} and other id is ${widget.OtherUserId}  and my id is ${myUserModel!.id} and token here is ${myUserModel?.fcmToken}");
   }
 
   @override
@@ -475,6 +476,9 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
   void sendMessage(String message, String time, String imagepath,
       bool botReplyOrUser) async {
     //botReplyOrUser is false when user is sending the replies or messages
+
+    var currentFcm = await Helper.getFCMToken();
+    print("here wehat it is $currentFcm");
     if (message != "") {
       if (!botReplyOrUser) {
         print("yenhi");
@@ -499,6 +503,8 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         }
 
         _textEditingController.text = "";
+        //here in free_message event i am sending fcmtoken of user itself cause if bot is replying it should go to the user itself
+        //user sending notification to user is handled differently through notificationSend message
         socket?.emit("free_message", {
           "message": message,
           "time": time,
@@ -508,7 +514,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
           "id": widget.myId,
           "isBot": widget.isBot,
           "limit": limit,
-          "fcmTokens": widget.token,
+          "fcmTokens": [currentFcm],
           "username": widget.username,
           "myUsername": myUserModel!.username,
           "profilePic": widget.profilePic,
@@ -630,6 +636,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
     print("hey coming here bbbbbbbbbbbbyyyyyyytes");
     print(bytes);
 
+    var currentFcm = await Helper.getFCMToken();
     //final resized = ResizeHelper().resizeJpeg(bytes, 800, 800, 80);
 
     try {
@@ -661,7 +668,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         "id": widget.myId,
         "isBot": widget.isBot,
         "limit": limit,
-        "fcmTokens": widget.token,
+        "fcmTokens": [currentFcm],
         "username": widget.username,
         "myUsername": myUserModel!.username,
         "profilePic": widget.profilePic,

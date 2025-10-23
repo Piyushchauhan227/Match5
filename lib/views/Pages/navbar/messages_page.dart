@@ -37,8 +37,9 @@ class _MessagesPageState extends State<MessagesPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("hello here");
+
     user = Provider.of<UserProvider>(context, listen: false).user;
+    print("hello here lets check tokens ${user?.fcmToken}");
     getMessages();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

@@ -7,6 +7,8 @@ import 'package:match5/views/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class EditProfile extends StatefulWidget {
   const EditProfile({required this.user, super.key});
@@ -169,6 +171,8 @@ class _EditProfileState extends State<EditProfile> {
                       children: [
                         TextButton(
                           onPressed: () async {
+                            tz.initializeTimeZones();
+                            final localTz = tz.local.name;
                             //print(textEditingController.text);
                             if ((widget.user!.username !=
                                         textEditingController.text &&
@@ -188,7 +192,8 @@ class _EditProfileState extends State<EditProfile> {
                                   interestedGenderValue,
                                   textEditingController.text,
                                   widget.user!.userProfile,
-                                  aboutTextEditingController.text);
+                                  aboutTextEditingController.text,
+                                  localTz.toString());
 
                               if (res.result == 200) {
                                 ScaffoldMessenger.of(context).showSnackBar(

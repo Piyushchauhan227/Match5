@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/Services/ad_service.dart';
@@ -36,7 +37,7 @@ class _WalletPageState extends State<WalletPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    AdService().loadRewardedAd();
+
     if (!mounted) return;
 
     products = iapService.products;
@@ -45,6 +46,7 @@ class _WalletPageState extends State<WalletPage> {
     if (!mounted) return;
     user = Provider.of<UserProvider>(context, listen: false);
     iapService.setUserProvider(user!);
+    AdService().loadRewardedAd();
   }
 
   @override
@@ -185,6 +187,11 @@ class _WalletPageState extends State<WalletPage> {
                   iapService.buy(product!);
                 } else {
                   //handle add thing
+                  if (!mounted) return;
+                  Provider.of<AnalyticsProvider>(context, listen: false)
+                      .logEvent("individual_chat_page", param: {
+                    "user_id": user!.user!.id,
+                  });
                   _showRewardedAd();
                 }
               },
@@ -205,7 +212,10 @@ class _WalletPageState extends State<WalletPage> {
 
   Future<void> addToDb() async {
     if (!mounted) return;
-
+    Provider.of<AnalyticsProvider>(context, listen: false)
+        .logEvent("individual_chat_page", param: {
+      "user_id": user!.user!.id,
+    });
     await OnBoardConnection().updateUserFires(5, user!.user!.id);
     user!.increaseFires();
     showDialog(

@@ -13,6 +13,8 @@ import 'package:match5/views/Pages/image_view.dart';
 import 'package:match5/views/Pages/wallet_page.dart';
 import 'package:provider/provider.dart';
 import 'package:match5/Provider/user_provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class UserProfile extends StatefulWidget {
   const UserProfile({required this.user, super.key});
@@ -453,6 +455,8 @@ class _UserProfileState extends State<UserProfile> {
                                   finalSelectedPicture =
                                       listOfImages[pictureIndex];
 
+                                  tz.initializeTimeZones();
+                                  final localTz = tz.local.name;
                                   var userNew = await OnBoardConnection()
                                       .updateUser(
                                           user.id,
@@ -460,7 +464,8 @@ class _UserProfileState extends State<UserProfile> {
                                           user.interestedGender,
                                           user.username,
                                           finalSelectedPicture,
-                                          user.about);
+                                          user.about,
+                                          localTz);
 
                                   Provider.of<UserProvider>(context,
                                           listen: false)

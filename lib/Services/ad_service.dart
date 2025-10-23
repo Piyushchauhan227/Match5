@@ -19,7 +19,6 @@ class AdService {
   bool isUnityInterstitialLoaded = false;
   bool isUnityInterstitialLoading = false;
   bool _adsInitialized = false;
-  bool unityOnlyMode = true;
 
   Future<void> init() async {
     if (_adsInitialized) return;
@@ -27,20 +26,11 @@ class AdService {
 
     Future.microtask(() async {
       try {
-        if (!unityOnlyMode) {
-          await MobileAds.instance.initialize();
+        await MobileAds.instance.initialize();
 
-          final isUnityReady = await UnityAds.isInitialized();
-          print("unity vala scene $isUnityReady");
-          if (!isUnityReady) {
-            await UnityAds.init(
-              gameId: UNITY_GAME_ID,
-              onComplete: () => print('✅ Unity Ads initialized'),
-              onFailed: (error, message) =>
-                  print('❌ Unity Init Failed: $message'),
-            );
-          }
-        } else {
+        final isUnityReady = await UnityAds.isInitialized();
+        print("unity vala scene $isUnityReady");
+        if (!isUnityReady) {
           await UnityAds.init(
             gameId: UNITY_GAME_ID,
             onComplete: () => print('✅ Unity Ads initialized'),
@@ -48,6 +38,7 @@ class AdService {
                 print('❌ Unity Init Failed: $message'),
           );
         }
+
         print("✅ Ads initialized");
       } catch (e) {
         print("⚠️ AdMob init error: $e");
@@ -67,6 +58,7 @@ class AdService {
         }, onAdFailedToLoad: (error) {
           print("Failed to load interstitial Ad");
           isInterstitialLoaded = false;
+          loadUnityInterstitial();
         }));
   }
 
@@ -86,46 +78,42 @@ class AdService {
       _interstitialAd = null;
       isInterstitialLoaded = false;
     } else {
-      print("Interstitial ad is not ready");
+      showUnityInterstitial();
     }
   }
 
-  void loadInterstitialAndShow() async {
-    if (!unityOnlyMode) {
-      await InterstitialAd.load(
-        adUnitId: INTERSTITIAL_AD_UNIT,
-        request: const AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (ad) {
-            debugPrint("✅ Interstitial loaded, showing now...");
-            _interstitialAd = ad;
+  // void loadInterstitialAndShow() async {
+  //   await InterstitialAd.load(
+  //     adUnitId: INTERSTITIAL_AD_UNIT,
+  //     request: const AdRequest(),
+  //     adLoadCallback: InterstitialAdLoadCallback(
+  //       onAdLoaded: (ad) {
+  //         debugPrint("✅ Interstitial loaded, showing now...");
+  //         _interstitialAd = ad;
 
-            ad.fullScreenContentCallback = FullScreenContentCallback(
-              onAdDismissedFullScreenContent: (ad) {
-                ad.dispose();
-                _interstitialAd = null;
-                //loadInterstitialAndShow(); // preload next one in background
-              },
-              onAdFailedToShowFullScreenContent: (ad, error) {
-                ad.dispose();
-                _interstitialAd = null;
-              },
-            );
+  //         ad.fullScreenContentCallback = FullScreenContentCallback(
+  //           onAdDismissedFullScreenContent: (ad) {
+  //             ad.dispose();
+  //             _interstitialAd = null;
+  //             //loadInterstitialAndShow(); // preload next one in background
+  //           },
+  //           onAdFailedToShowFullScreenContent: (ad, error) {
+  //             ad.dispose();
+  //             _interstitialAd = null;
+  //           },
+  //         );
 
-            ad.show(); // 👈 auto-show immediately when loaded
-            _interstitialAd = null;
-          },
-          onAdFailedToLoad: (error) {
-            debugPrint("❌ Failed to load interstitial: $error");
-            _interstitialAd = null;
-            loadUnityInterstitial();
-          },
-        ),
-      );
-    } else {
-      loadUnityInterstitial();
-    }
-  }
+  //         ad.show(); // 👈 auto-show immediately when loaded
+  //         _interstitialAd = null;
+  //       },
+  //       onAdFailedToLoad: (error) {
+  //         debugPrint("❌ Failed to load interstitial: $error");
+  //         _interstitialAd = null;
+  //         loadUnityInterstitial();
+  //       },
+  //     ),
+  //   );
+  // }
 
   void disposeInterstitial() {
     _interstitialAd?.dispose();
@@ -134,26 +122,23 @@ class AdService {
   void loadRewardedAd() {
     print("rewaRD LOADED");
     if (isRewardedLoaded || rewardedAd != null) return;
-    if (!unityOnlyMode) {
-      isRewardedLoaded = true;
 
-      RewardedAd.load(
-          adUnitId: REWARD_AD_UNIT,
-          request: const AdRequest(),
-          rewardedAdLoadCallback:
-              RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
-            print("✅ Rewarded Ad Loaded");
-            rewardedAd = ad;
-            isRewardedLoaded = false;
-          }, onAdFailedToLoad: (LoadAdError error) {
-            print("❌ Failed to load rewarded ad: $error");
-            rewardedAd = null;
-            isRewardedLoaded = false;
-            loadUnityRewardAd();
-          }));
-    } else {
-      loadUnityRewardAd();
-    }
+    isRewardedLoaded = true;
+
+    RewardedAd.load(
+        adUnitId: REWARD_AD_UNIT,
+        request: const AdRequest(),
+        rewardedAdLoadCallback:
+            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+          print("✅ Rewarded Ad Loaded");
+          rewardedAd = ad;
+          isRewardedLoaded = false;
+        }, onAdFailedToLoad: (LoadAdError error) {
+          print("❌ Failed to load rewarded ad: $error");
+          rewardedAd = null;
+          isRewardedLoaded = false;
+          loadUnityRewardAd();
+        }));
   }
 
   void showRewardedAd(
@@ -264,8 +249,8 @@ class AdService {
 
           isUnityInterstitialLoaded = false;
           Future.delayed(Duration(seconds: 1), () {
-            //loadInterstitialAd(); // preload next
-            loadUnityInterstitial();
+            loadInterstitialAd(); // preload next
+            // loadUnityInterstitial();
           });
         },
         onSkipped: (placementId) {
@@ -273,8 +258,8 @@ class AdService {
 
           isUnityInterstitialLoaded = false;
           Future.delayed(Duration(seconds: 1), () {
-            //loadInterstitialAd(); // preload next
-            loadUnityInterstitial();
+            loadInterstitialAd(); // preload next
+            //loadUnityInterstitial();
           });
         },
         onFailed: (placementId, error, message) {
@@ -282,8 +267,8 @@ class AdService {
 
           isUnityInterstitialLoaded = false;
           Future.delayed(Duration(seconds: 1), () {
-            //loadInterstitialAd(); // preload next
-            loadUnityInterstitial();
+            loadInterstitialAd(); // preload next
+            //loadUnityInterstitial();
           });
         },
       );

@@ -13,6 +13,7 @@ import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
+import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Services/ad_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/questions.dart';
@@ -109,7 +110,11 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     timeStart();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AdService().loadUnityInterstitial();
+      AdService().loadInterstitialAd();
+      Provider.of<AnalyticsProvider>(context, listen: false)
+          .logEvent("individual_chat_page", param: {
+        "user_id": userModel!.id,
+      });
     });
   }
 

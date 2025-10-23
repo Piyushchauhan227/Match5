@@ -118,12 +118,15 @@ class _HomeScreenState extends State<HomeScreen> {
       if (fcmToken != prevfcmToken) {
         //update and delete
         print("Dasssa tenoi");
-        await OnBoardConnection()
+        var list = await OnBoardConnection()
             .updateAndDeleteFCMToken(widget.user.id, fcmToken, prevfcmToken);
+        print("Dassa tenoi $list");
       } else {
         print("gandu");
         //just update
-        await OnBoardConnection().updateFCM(widget.user.id, fcmToken);
+        var list =
+            await OnBoardConnection().updateFCM(widget.user.id, fcmToken);
+        print("gandu ke neeche list  $list");
       }
     }
   }
