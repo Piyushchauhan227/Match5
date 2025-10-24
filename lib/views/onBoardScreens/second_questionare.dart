@@ -155,6 +155,7 @@ class _SecondQuestionaireState extends State<SecondQuestionaire> {
                     onPressed: () async {
                       print("D");
                       var list = await OnBoardConnection().getAvatarList();
+                      if (!mounted) return;
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (builder) => Username(
                                 id: widget.id,

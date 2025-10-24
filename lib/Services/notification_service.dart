@@ -9,6 +9,7 @@ import 'package:match5/main.dart';
 import 'package:match5/utils/login_helper.dart';
 import 'package:match5/utils/notification_message.dart';
 import 'package:match5/views/Pages/individual_loaded_chat.dart';
+import 'package:match5/views/splash_screen.dart';
 
 class NotificationService {
   //handles fcm
@@ -104,20 +105,41 @@ class NotificationService {
         "notification repose hee check kro bs nr.payload chlta hai usko pele jsonDecode kro ");
     print(notificationResponse);
     var payload = jsonDecode(notificationResponse.payload!);
-    print(payload);
-    var tokens = List<String>.from(jsonDecode(payload["tokens"]));
-    navigatorKey.currentState!.push(MaterialPageRoute(
-        builder: (builder) => IndividualLoadedChat(
-              //here for otheruserid i send my id cause for other user this is otherUserid
-              username: payload["username"],
-              OtherUserId: payload["otherUserId"],
-              myId: payload["myId"],
-              profilePic: payload["profilePic"],
-              isBot: payload["isBot"],
-              token: tokens,
-              isItcomingFromMessagePage: false,
-              comingFromAd: true,
-            )));
+
+    switch (payload["type"]) {
+      case "chat":
+        try {
+          var tokens = List<String>.from(jsonDecode(payload["tokens"]));
+          navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (builder) => IndividualLoadedChat(
+                    //here for otheruserid i send my id cause for other user this is otherUserid
+                    username: payload["username"],
+                    OtherUserId: payload["otherUserId"],
+                    myId: payload["myId"],
+                    profilePic: payload["profilePic"],
+                    isBot: payload["isBot"],
+                    token: tokens,
+                    isItcomingFromMessagePage: false,
+                    comingFromAd: true,
+                  )));
+        } catch (e) {
+          print("⚠️ Error parsing chat payload: $e");
+        }
+        break;
+
+      case "activity":
+        // 👉 Maybe navigate to your home or activity page
+        print("launched from terminated in activity ${payload["type"]}");
+        Future.delayed(const Duration(milliseconds: 300), () {
+          navigatorKey.currentState!.push(
+            MaterialPageRoute(builder: (builder) => SplashScreen()),
+          );
+        });
+        break;
+
+      default:
+        print("Unhandled notification type: ${payload["type"]}");
+    }
   }
 
   //shwo a simple notification

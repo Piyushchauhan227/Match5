@@ -22,6 +22,9 @@ class _ChooseAvatarState extends State<ChooseAvatar> {
           fit: BoxFit.fill,
           height: 80,
           width: 80,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.person);
+          },
         ),
       ),
     );

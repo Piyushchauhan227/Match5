@@ -120,8 +120,12 @@ class _UserProfileState extends State<UserProfile> {
                     child: CircleAvatar(
                       radius: 50,
                       child: ClipOval(
-                        child:
-                            Image.network("$BASE_URL/profile_pics/$profilepic"),
+                        child: Image.network(
+                          "$BASE_URL/profile_pics/$profilepic",
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(Icons.person);
+                          },
+                        ),
                       ),
                     ),
                   ),

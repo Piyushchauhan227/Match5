@@ -99,20 +99,41 @@ class _MainAppState extends State<MainApp> {
     //on background notification tapped
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (message.notification != null) {
+        print("checking  aa upr ${message.data["type"]}");
         var payload = message.data;
-        print(payload);
-        var tokens = List<String>.from(jsonDecode(payload["tokens"]));
-        navigatorKey.currentState!.push(MaterialPageRoute(
-            builder: (builder) => IndividualLoadedChat(
-                  username: payload["username"],
-                  OtherUserId: payload["otherUserId"],
-                  myId: payload["myId"],
-                  profilePic: payload["profilePic"],
-                  isBot: payload["isBot"],
-                  token: tokens,
-                  isItcomingFromMessagePage: false,
-                  comingFromAd: true,
-                )));
+
+        switch (payload["type"]) {
+          case "chat":
+            try {
+              var tokens = List<String>.from(jsonDecode(payload["tokens"]));
+              navigatorKey.currentState!.push(MaterialPageRoute(
+                  builder: (builder) => IndividualLoadedChat(
+                        username: payload["username"],
+                        OtherUserId: payload["otherUserId"],
+                        myId: payload["myId"],
+                        profilePic: payload["profilePic"],
+                        isBot: payload["isBot"],
+                        token: tokens,
+                        isItcomingFromMessagePage: false,
+                        comingFromAd: true,
+                      )));
+            } catch (e) {
+              print("⚠️ Error parsing chat payload: $e");
+            }
+            break;
+
+          case "activity":
+            // 👉 Maybe navigate to your home or activity page
+            Future.delayed(const Duration(milliseconds: 300), () {
+              navigatorKey.currentState!.push(
+                MaterialPageRoute(builder: (builder) => SplashScreen()),
+              );
+            });
+            break;
+
+          default:
+            print("Unhandled notification type: ${payload["type"]}");
+        }
       }
     });
 
@@ -121,6 +142,7 @@ class _MainAppState extends State<MainApp> {
       String payloadData = jsonEncode(message.data);
 
       if (message.notification != null) {
+        print("checking noti ethe e aa upr ${message.data["type"]}");
         if (message.data["type"] == "chat") {
           print("checking noti ethe e aa");
           Provider.of<MessageListProvider>(context, listen: false)
@@ -171,23 +193,43 @@ class _MainAppState extends State<MainApp> {
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (message != null) {
-      print("launched from terminated state");
-      Future.delayed(Duration(seconds: 1), () {
-        var payload = message.data;
-        print(payload);
-        var tokens = List<String>.from(jsonDecode(payload["tokens"]));
-        navigatorKey.currentState!.push(MaterialPageRoute(
-            builder: (builder) => IndividualLoadedChat(
-                  username: payload["username"],
-                  OtherUserId: payload["otherUserId"],
-                  myId: payload["myId"],
-                  profilePic: payload["profilePic"],
-                  isBot: payload["isBot"],
-                  token: tokens,
-                  isItcomingFromMessagePage: false,
-                  comingFromAd: true,
-                )));
-      });
+      var payload = message.data;
+      print("launched from terminated state ${payload["type"]}");
+      switch (payload["type"]) {
+        case "chat":
+          try {
+            Future.delayed(Duration(seconds: 1), () {
+              var tokens = List<String>.from(jsonDecode(payload["tokens"]));
+              navigatorKey.currentState!.push(MaterialPageRoute(
+                  builder: (builder) => IndividualLoadedChat(
+                        username: payload["username"],
+                        OtherUserId: payload["otherUserId"],
+                        myId: payload["myId"],
+                        profilePic: payload["profilePic"],
+                        isBot: payload["isBot"],
+                        token: tokens,
+                        isItcomingFromMessagePage: false,
+                        comingFromAd: true,
+                      )));
+            });
+          } catch (e) {
+            print("⚠️ Error parsing chat payload: $e");
+          }
+          break;
+
+        case "activity":
+          // 👉 Maybe navigate to your home or activity page
+          print("launched from terminated in activity ${payload["type"]}");
+          Future.delayed(const Duration(milliseconds: 300), () {
+            navigatorKey.currentState!.push(
+              MaterialPageRoute(builder: (builder) => SplashScreen()),
+            );
+          });
+          break;
+
+        default:
+          print("Unhandled notification type: ${payload["type"]}");
+      }
     }
   }
 }

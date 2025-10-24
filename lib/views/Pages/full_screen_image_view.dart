@@ -35,6 +35,9 @@ class FullScreenImageView extends StatelessWidget {
                 child: Image.network(
               imagepath,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(Icons.person);
+              },
             )),
           ),
         ));

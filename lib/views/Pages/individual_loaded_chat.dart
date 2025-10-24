@@ -185,6 +185,9 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
                       width: 48,
                       height: 48,
                       fit: BoxFit.fill,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.person);
+                      },
                     ),
                   ),
                   Padding(

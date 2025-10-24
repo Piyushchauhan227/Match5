@@ -50,6 +50,9 @@ class _MessageCardState extends State<MessageCard> {
                     width: 55,
                     height: 55,
                     fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.person);
+                    },
                   ),
                 )),
             //messages column

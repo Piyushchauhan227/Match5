@@ -44,6 +44,9 @@ class MessageWithImage extends StatelessWidget {
                           fit: BoxFit.cover,
                           height: 200,
                           width: 300,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(Icons.image);
+                          },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) {
                               return child;
