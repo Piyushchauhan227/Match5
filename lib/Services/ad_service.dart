@@ -19,6 +19,7 @@ class AdService {
   bool isUnityInterstitialLoaded = false;
   bool isUnityInterstitialLoading = false;
   bool _adsInitialized = false;
+  bool pendingUnityShow = false;
 
   Future<void> init() async {
     if (_adsInitialized) return;
@@ -225,19 +226,26 @@ class AdService {
         print("✅ Unity Interstitial loaded: $placementId");
         isUnityInterstitialLoaded = true;
         isUnityInterstitialLoading = false;
+        if (pendingUnityShow) {
+          pendingUnityShow = false;
+          showInterstitialAd();
+        }
       },
       onFailed: (placementId, error, message) {
         print("❌ Failed to load Unity Interstitial: $error - $message");
         isUnityInterstitialLoaded = false;
         isUnityInterstitialLoading = false;
+        pendingUnityShow = false;
       },
     );
   }
 
   void showUnityInterstitial() async {
     if (!isUnityInterstitialLoaded) {
+      pendingUnityShow = true;
       loadUnityInterstitial();
     } else {
+      print("in here mate");
       await Future.delayed(const Duration(milliseconds: 500));
       UnityAds.showVideoAd(
         placementId: INTERSTITIAL_DIRECT_LOADED_CHAT,
