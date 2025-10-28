@@ -48,19 +48,24 @@ class AdService {
   }
 
   void loadInterstitialAd() async {
-    isInterstitialLoaded = false;
-    await InterstitialAd.load(
-        adUnitId: INTERSTITIAL_AD_UNIT,
-        request: AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          isInterstitialLoaded = true;
-          print("interstitial Ad Loaded");
-        }, onAdFailedToLoad: (error) {
-          print("Failed to load interstitial Ad");
-          isInterstitialLoaded = false;
-          loadUnityInterstitial();
-        }));
+    if (_interstitialAd != null && isInterstitialLoaded) {
+      return;
+    } else {
+      isInterstitialLoaded = false;
+      _interstitialAd?.dispose();
+      await InterstitialAd.load(
+          adUnitId: INTERSTITIAL_AD_UNIT,
+          request: AdRequest(),
+          adLoadCallback: InterstitialAdLoadCallback(onAdLoaded: (ad) {
+            _interstitialAd = ad;
+            isInterstitialLoaded = true;
+            print("✅ interstitial Ad Loaded");
+          }, onAdFailedToLoad: (error) {
+            print("Failed to load interstitial Ad");
+            isInterstitialLoaded = false;
+            loadUnityInterstitial();
+          }));
+    }
   }
 
   void showInterstitialAd() {
@@ -125,7 +130,7 @@ class AdService {
     if (isRewardedLoaded || rewardedAd != null) return;
 
     isRewardedLoaded = true;
-
+    rewardedAd?.dispose();
     RewardedAd.load(
         adUnitId: REWARD_AD_UNIT,
         request: const AdRequest(),
@@ -218,6 +223,7 @@ class AdService {
 
   void loadUnityInterstitial() {
     if (isUnityInterstitialLoading) return;
+
     isUnityInterstitialLoaded = false;
     isUnityInterstitialLoading = true;
     UnityAds.load(

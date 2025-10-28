@@ -113,100 +113,103 @@ class _WalletPageState extends State<WalletPage> {
         title: const Text("Wallet",
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       ),
-      body: Column(children: [
-        GestureDetector(
-          onTap: () {},
-          child: Container(
-            width: double.infinity,
-            height: 50,
-            // decoration: BoxDecoration(
-            //     border: Border(bottom: BorderSide(color: Colors.grey, width: 1))),
-            decoration: const BoxDecoration(boxShadow: [
-              BoxShadow(
-                color: Color.fromARGB(255, 249, 245, 245), // shadow color
-                spreadRadius: 1, // how wide the shadow spreads
-                blurRadius: 6, // softness of the shadow
-                offset: Offset(0, 3),
-              )
-            ]),
-            child: InkWell(
-              onTap: () {
-                if (!mounted) return;
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => TransactionHistory()));
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(left: 16),
-                      child: Text(
-                        "Transaction history",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+      body: SafeArea(
+        child: Column(children: [
+          GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: double.infinity,
+              height: 50,
+              // decoration: BoxDecoration(
+              //     border: Border(bottom: BorderSide(color: Colors.grey, width: 1))),
+              decoration: const BoxDecoration(boxShadow: [
+                BoxShadow(
+                  color: Color.fromARGB(255, 249, 245, 245), // shadow color
+                  spreadRadius: 1, // how wide the shadow spreads
+                  blurRadius: 6, // softness of the shadow
+                  offset: Offset(0, 3),
+                )
+              ]),
+              child: InkWell(
+                onTap: () {
+                  if (!mounted) return;
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => TransactionHistory()));
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(left: 16),
+                        child: Text(
+                          "Transaction history",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(right: 8),
-                      child: Icon(Icons.arrow_forward_ios_sharp),
-                    )
-                  ],
+                      Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(Icons.arrow_forward_ios_sharp),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        Expanded(
-            child: GridView.builder(
-          padding: EdgeInsets.all(16),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 0.83,
-          ),
-          itemBuilder: (context, index) {
-            final reward = fireIcons[index];
+          Expanded(
+              child: GridView.builder(
+            padding: EdgeInsets.all(16),
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 220,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: MediaQuery.of(context).size.width /
+                  (MediaQuery.of(context).size.height / 1.8),
+            ),
+            itemBuilder: (context, index) {
+              final reward = fireIcons[index];
 
-            ProductDetails? product;
-            try {
-              product = products?.firstWhere(
-                (p) => p.id == reward.productId,
-                orElse: () => throw Exception("Not found"),
+              ProductDetails? product;
+              try {
+                product = products?.firstWhere(
+                  (p) => p.id == reward.productId,
+                  orElse: () => throw Exception("Not found"),
+                );
+              } catch (_) {
+                product = null;
+              }
+
+              return InkWell(
+                onTap: () {
+                  if (!reward.isAd) {
+                    iapService.buy(product!);
+                  } else {
+                    //handle add thing
+                    if (!mounted) return;
+                    Provider.of<AnalyticsProvider>(context, listen: false)
+                        .logEvent("individual_chat_page", param: {
+                      "user_id": user!.user!.id,
+                    });
+                    _showRewardedAd();
+                  }
+                },
+                child: RewardCard(
+                  fire: fireIcons[index].icon,
+                  reward: fireIcons[index].reward,
+                  price: product?.price ?? fireIcons[index].price,
+                  packName: fireIcons[index].packName,
+                  isAd: fireIcons[index].isAd,
+                ),
               );
-            } catch (_) {
-              product = null;
-            }
-
-            return InkWell(
-              onTap: () {
-                if (!reward.isAd) {
-                  iapService.buy(product!);
-                } else {
-                  //handle add thing
-                  if (!mounted) return;
-                  Provider.of<AnalyticsProvider>(context, listen: false)
-                      .logEvent("individual_chat_page", param: {
-                    "user_id": user!.user!.id,
-                  });
-                  _showRewardedAd();
-                }
-              },
-              child: RewardCard(
-                fire: fireIcons[index].icon,
-                reward: fireIcons[index].reward,
-                price: product?.price ?? fireIcons[index].price,
-                packName: fireIcons[index].packName,
-                isAd: fireIcons[index].isAd,
-              ),
-            );
-          },
-          itemCount: fireIcons.length,
-        )),
-      ]),
+            },
+            itemCount: fireIcons.length,
+          )),
+        ]),
+      ),
     );
   }
 

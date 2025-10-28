@@ -110,6 +110,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     timeStart();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("in here mae");
       AdService().loadInterstitialAd();
       Provider.of<AnalyticsProvider>(context, listen: false)
           .logEvent("individual_chat_page", param: {
@@ -572,7 +573,11 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                         decoration:
                             BoxDecoration(color: Color.fromARGB(50, 0, 0, 0)),
                         child: Center(
-                            child: IntrinsicWidth(
+                            child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.85,
+                            minWidth: MediaQuery.of(context).size.width * 0.6,
+                          ),
                           child: Container(
                             // height: 250,
                             // width: 260,
@@ -1217,21 +1222,29 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           });
         }
       }
-      if (timeLeft == 0) {
+      if (timeLeft == 0 && !navigatoForwardFromTimer) {
         if (!mounted) return;
-        if (!navigatoForwardFromTimer) {
-          if (showAlerts) {
-            //delete conversation here
-            print("dddddeeelint");
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          } else {
-            print(" dpooohaaaa. dddddeeelint");
+        if (showAlerts) {
+          //delete conversation here
+          print("dddddeeelint");
+          if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }
 
-          navigatoForwardFromTimer = true;
+          // delay next pop slightly to let previous close cleanly
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+          });
+        } else {
+          print(" dpooohaaaa. dddddeeelint");
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
         }
+
+        navigatoForwardFromTimer = true;
       }
     });
   }

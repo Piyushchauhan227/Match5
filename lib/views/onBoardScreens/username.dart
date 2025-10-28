@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/notification_service.dart';
@@ -153,8 +154,9 @@ class _UsernameState extends State<Username> {
                   print("picnames are here $picname");
 
                   if (!username.text.trim().isEmpty) {
-                    tz.initializeTimeZones();
-                    final localTz = tz.local.name;
+                    final localTimezone =
+                        await FlutterTimezone.getLocalTimezone();
+                    var localTz = localTimezone.identifier.toString();
 
                     var res = await OnBoardConnection()
                         .updateUser(

@@ -57,7 +57,10 @@ class _HomePageState extends State<HomePage> {
       var userProvider = Provider.of<UserProvider>(context, listen: false);
       iapService.restorePurchases();
       iapService.setUserProvider(userProvider);
-      loadRewardAd();
+      var fires = userProvider.user?.coins;
+      if (fires! <= 1) {
+        loadRewardAd();
+      }
     });
   }
 
@@ -272,7 +275,11 @@ class _HomePageState extends State<HomePage> {
                         final fires = user.coins ?? 0;
 
                         print("fires are checking $fires");
+                        if (fires <= 1) {
+                          loadRewardAd();
+                        }
                         if (fires <= 0) {
+                          loadRewardAd();
                           showNoFirePopup();
                         } else {
                           print("do bari");
@@ -385,7 +392,7 @@ class _HomePageState extends State<HomePage> {
                     child: const Text(
                       "Buy more Fires",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
@@ -400,7 +407,7 @@ class _HomePageState extends State<HomePage> {
 
   void loadRewardAd() async {
     adService.loadRewardedAd();
-    adService.loadInterstitialAd();
+    //adService.loadInterstitialAd();
   }
 }
 
@@ -450,7 +457,7 @@ class __pulsePlayState extends State<_pulsePlay>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
           elevation: 10,
           shadowColor: Colors.deepOrangeAccent,
         ),
@@ -535,7 +542,7 @@ class __pulsePlayState extends State<_pulsePlay>
         label: const Text(
           "Watch an Ad",
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             color: Colors.white,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,

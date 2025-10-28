@@ -105,7 +105,8 @@ class _LoginscreenState extends State<Loginscreen> {
                                 color: Colors.transparent,
                                 child: Container(
                                   height: 60,
-                                  width: MediaQuery.of(context).size.width - 50,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.85,
                                   decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(30)),
@@ -135,13 +136,19 @@ class _LoginscreenState extends State<Loginscreen> {
                                             const SizedBox(
                                               width: 10,
                                             ),
-                                            const Text(
-                                              "Continue with Google",
-                                              style: TextStyle(
-                                                  fontSize: 20,
+                                            const Flexible(
+                                              child: Text(
+                                                "Continue with Google",
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 18,
                                                   fontFamily: "Lato",
-                                                  fontWeight: FontWeight.w500),
-                                            )
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                 ),
@@ -165,7 +172,8 @@ class _LoginscreenState extends State<Loginscreen> {
                                 color: Colors.transparent,
                                 child: Container(
                                   height: 60,
-                                  width: MediaQuery.of(context).size.width - 50,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.85,
                                   decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(30)),
@@ -182,13 +190,19 @@ class _LoginscreenState extends State<Loginscreen> {
                                       const SizedBox(
                                         width: 22,
                                       ),
-                                      const Text(
-                                        "Continue with Match5",
-                                        style: TextStyle(
-                                            fontSize: 20,
+                                      const Flexible(
+                                        child: Text(
+                                          "Continue with Match5",
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 18,
                                             fontFamily: "Lato",
-                                            fontWeight: FontWeight.w500),
-                                      )
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

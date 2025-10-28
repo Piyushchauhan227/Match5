@@ -98,6 +98,7 @@ class OnBoardConnection {
   Future<LoginResultEnd> updateUser(
       id, gender, interestedGender, username, userProfile, about, tz) async {
     var url = Uri.parse('$BASE_URL/user/update');
+    print("edr v update ch $tz");
     var response = await http.patch(url, body: {
       "id": id,
       "gender": gender,

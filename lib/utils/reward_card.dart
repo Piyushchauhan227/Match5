@@ -59,7 +59,7 @@ class _RewardCardState extends State<RewardCard> {
               ]),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Align(
                 alignment: Alignment.topRight,
@@ -211,9 +211,6 @@ class _RewardCardState extends State<RewardCard> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 8,
-                            ),
                             Icon(
                               Icons.slow_motion_video_rounded,
                               size: 20,
@@ -229,9 +226,6 @@ class _RewardCardState extends State<RewardCard> {
                                 fontSize: 14,
                               ),
                             ),
-                            SizedBox(
-                              width: 8,
-                            )
                           ],
                         )),
                     SizedBox(
