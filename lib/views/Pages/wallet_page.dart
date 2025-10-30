@@ -249,7 +249,7 @@ class _WalletPageState extends State<WalletPage> {
           child: CircularProgressIndicator(color: Colors.yellow),
         ),
       );
-      while (AdService().isRewardedLoaded) {
+      while (AdService().isRewardedLoaded || AdService().isUnityLoading) {
         await Future.delayed(const Duration(milliseconds: 300));
       }
       if (!mounted) return;

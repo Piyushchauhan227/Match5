@@ -207,12 +207,14 @@ class AdService {
         placementId: REWARD_DIRECT_WALLET,
         onComplete: (placementId) {
           isUnityLoaded = true;
+
           isUnityLoading = false;
           print("✅ Rewarded Ad preloaded from Unity");
         },
         onFailed: (placementId, error, message) {
           isUnityLoaded = false;
           isUnityLoading = false;
+
           print('❌ Failed to preload: $message');
         });
   }

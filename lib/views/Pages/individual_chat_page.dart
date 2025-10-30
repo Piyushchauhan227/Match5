@@ -1014,7 +1014,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                 )));
       } else {
         if (!alreadyPoppedNoNeedForMatchResult) {
-          AdService().showInterstitialAd();
+          // AdService().showInterstitialAd();
           print("nnnnnnnnnnnnnnnnnnoooooooooooooooooooooooooooooooooooooooo");
           //not matched this time prompt
           deleteConversationFirst();
@@ -1223,28 +1223,35 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         }
       }
       if (timeLeft == 0 && !navigatoForwardFromTimer) {
-        if (!mounted) return;
+        navigatoForwardFromTimer = true;
+        counterTimer?.cancel();
         if (showAlerts) {
           //delete conversation here
           print("dddddeeelint");
-          if (Navigator.of(context).canPop()) {
+          if (mounted && Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }
 
           // delay next pop slightly to let previous close cleanly
           Future.delayed(const Duration(milliseconds: 100), () {
             if (mounted && Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
+              try {
+                Navigator.of(context).pop();
+              } catch (e) {
+                print("⚠️ Safe catch: $e");
+              }
             }
           });
         } else {
           print(" dpooohaaaa. dddddeeelint");
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
+          if (mounted && Navigator.of(context).canPop()) {
+            try {
+              Navigator.of(context).pop();
+            } catch (e) {
+              print("⚠️ Safe catch: $e");
+            }
           }
         }
-
-        navigatoForwardFromTimer = true;
       }
     });
   }

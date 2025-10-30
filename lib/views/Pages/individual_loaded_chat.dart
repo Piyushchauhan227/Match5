@@ -536,6 +536,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
               "seen",
               imagepath);
 
+          if (!mounted) return;
           Provider.of<MessageListProvider>(context, listen: false)
               .updateConversation(conversationId, message, time);
         } else {
@@ -547,13 +548,14 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
               conversationId,
               "sent",
               imagepath);
-
+          if (!mounted) return;
           Provider.of<MessageListProvider>(context, listen: false)
               .updateConversation(conversationId, message, time);
         }
 
         if (limit && widget.isBot == "true") {
           print("limit reacher");
+          if (!mounted) return;
           setState(() {
             userStatus = false;
           });
@@ -592,6 +594,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         }
         if (limit) {
           print("limit reacher in bot");
+          if (!mounted) return;
           setState(() {
             userStatus = false;
           });
@@ -604,15 +607,19 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
       String s, String msg, String time, String imagepath, String status) {
     print(imagepath);
     if (!mounted) return;
-    Provider.of<MessageListProvider>(context, listen: false)
-        .updateConversation(conversationId, msg, time);
+    try {
+      Provider.of<MessageListProvider>(context, listen: false)
+          .updateConversation(conversationId, msg, time);
 
-    MessageModel messageModel = MessageModel(
-        type: s, message: msg, time: time, path: imagepath, status: status);
-    if (mounted) {
-      setState(() {
-        messages.insert(0, messageModel);
-      });
+      MessageModel messageModel = MessageModel(
+          type: s, message: msg, time: time, path: imagepath, status: status);
+      if (mounted) {
+        setState(() {
+          messages.insert(0, messageModel);
+        });
+      }
+    } catch (e, s) {
+      print("⚠️ setMessage error: $e");
     }
   }
 
@@ -701,8 +708,9 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
             widget.myId,
             "chat");
       }
-
-      Navigator.of(context).pop();
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
     } catch (e) {
       print('Error uploading image: $e');
     }

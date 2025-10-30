@@ -16,6 +16,7 @@ class BotUserAPI {
       return resData["user"];
     } catch (e) {
       print("Message is failed $e");
+      return null;
     }
   }
 

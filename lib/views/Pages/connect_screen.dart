@@ -287,6 +287,12 @@ class _ConnectScreenState extends State<ConnectScreen>
       var newBot = await BotUserAPI()
           .createBot(userName, user!.interestedGender, user!.gender);
       if (!mounted) return;
+      if (newBot == null || newBot["_id"] == null) {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+          return;
+        }
+      }
       setState(() {
         botUser = newBot["_id"];
       });

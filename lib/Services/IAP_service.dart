@@ -41,9 +41,11 @@ class IapService {
 
   Future<void> initialize() async {
     available = await _iap.isAvailable();
+    print("Products inside  first");
     if (available) {
       const ids = {'fires15', 'fires49', 'fires120', 'fires299', 'fires999'};
       ProductDetailsResponse response = await _iap.queryProductDetails(ids);
+      print("Products inside ${response.productDetails}");
       products = response.productDetails;
 
       subscription?.cancel();

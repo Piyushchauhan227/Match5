@@ -136,6 +136,8 @@ PODS:
     - GTMSessionFetcher/Core (< 5.0, >= 3.4)
   - flutter_local_notifications (0.0.1):
     - FlutterMacOS
+  - flutter_timezone (0.1.0):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - google_sign_in_ios (0.0.1):
     - AppAuth (>= 1.7.4)
@@ -243,6 +245,7 @@ DEPENDENCIES:
   - firebase_messaging (from `Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos`)
   - firebase_storage (from `Flutter/ephemeral/.symlinks/plugins/firebase_storage/macos`)
   - flutter_local_notifications (from `Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos`)
+  - flutter_timezone (from `Flutter/ephemeral/.symlinks/plugins/flutter_timezone/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - google_sign_in_ios (from `Flutter/ephemeral/.symlinks/plugins/google_sign_in_ios/darwin`)
   - in_app_purchase_storekit (from `Flutter/ephemeral/.symlinks/plugins/in_app_purchase_storekit/darwin`)
@@ -301,6 +304,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/firebase_storage/macos
   flutter_local_notifications:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos
+  flutter_timezone:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_timezone/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   google_sign_in_ios:
@@ -346,6 +351,7 @@ SPEC CHECKSUMS:
   FirebaseSessions: eaa8ec037e7793769defe4201c20bd4d976f9677
   FirebaseStorage: 2a3e5402a565e06e121308dadfe0626976fd6b45
   flutter_local_notifications: 4bf37a31afde695b56091b4ae3e4d9c7a7e6cda0
+  flutter_timezone: d272288c69082ad571630e0d17140b3d6b93dc0c
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   google_sign_in_ios: 19297361f2c51d7d8ac0201b866ef1fa5d1f94a8
   GoogleAppMeasurement: 0dfca1a4b534d123de3945e28f77869d10d0d600

@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   //UserModel? userhere;
   String? fcmToken = "";
   int currentPage = 0;
+  bool notificationChecked = false;
 
   @override
   void initState() {
@@ -133,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _checkPermissions() async {
+    if (notificationChecked) return;
+    notificationChecked = true;
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
     switch (settings.authorizationStatus) {
       case AuthorizationStatus.authorized:
