@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:ironsource_mediation/ironsource_mediation.dart';
 import 'package:match5/Database/api/messages_api.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Services/ad_service.dart';
+import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/main.dart';
 import 'package:match5/utils/login_helper.dart';
@@ -45,7 +47,8 @@ class _HomePageState extends State<HomePage> {
 
   String? fcmToken = "";
   String? deviceId = "";
-  AdService adService = AdService();
+  //AdService adService = AdService();
+  LevelPlayService adService = LevelPlayService();
 
   @override
   void initState() {
@@ -406,15 +409,40 @@ class _HomePageState extends State<HomePage> {
   }
 
   void loadRewardAd() async {
-    adService.loadRewardedAd();
+    adService.loadRewardedAds(onRewardGranted: () async {
+      await addToDb();
+    });
     //adService.loadInterstitialAd();
+  }
+
+  Future<void> addToDb() async {
+    if (!mounted) return;
+    var user = Provider.of<UserProvider>(context, listen: false);
+
+    Provider.of<AnalyticsProvider>(context, listen: false)
+        .logEvent("reward_given", param: {"user_id": user.user!.id});
+    await OnBoardConnection().updateUserFires(5, user.user!.id);
+    user.increaseFires();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        title: Text("Success 🎉"),
+        content: Text("You earned 5 free Fires!"),
+      ),
+    );
+
+    // Auto close after 1.5 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pop();
+    });
   }
 }
 
 class _pulsePlay extends StatefulWidget {
   const _pulsePlay({required this.adService, super.key});
 
-  final AdService adService;
+  final LevelPlayService adService;
 
   @override
   State<_pulsePlay> createState() => __pulsePlayState();
@@ -469,13 +497,12 @@ class __pulsePlayState extends State<_pulsePlay>
               .logEvent("reward_asked_in_home_page", param: {
             "user_id": user!.user!.id,
           });
-          widget.adService.showRewardedAd(onUserReward: () {
-            print("loaded and showing now");
-            addToDb();
-          }, rewardStillLoading: (network) async {
-            if (network == "admob") {
-              print("admob ka");
-              if (!mounted) return;
+          widget.adService.showRewardedAd(
+            onRewardGranted: () async {
+              await addToDb();
+            },
+            showProgressDialog: () {
+              print("idr ka msla");
               showDialog(
                   context: context,
                   builder: (context) {
@@ -483,56 +510,87 @@ class __pulsePlayState extends State<_pulsePlay>
                         backgroundColor: Colors.transparent,
                         child: Center(child: CircularProgressIndicator()));
                   });
-              while (widget.adService.isRewardedLoaded) {
-                await Future.delayed(const Duration(milliseconds: 200));
-              }
-              if (mounted) Navigator.of(context).pop();
-              if (widget.adService.rewardedAd != null) {
-                widget.adService.showRewardedAd(onUserReward: () {
-                  print("loaded and showing now");
+              LevelPlayService().hasRewardedLoadBegin.addListener(() async {
+                if (LevelPlayService().hasRewardedLoadBegin.value == false) {
+                  if (mounted && Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop(); // pop the loader
 
-                  addToDb();
-                }); // 👈 now we can show
-                widget.adService.rewardedAd = null;
-              } else {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No ads available right now")),
-                );
-              }
-            } else if (network == "unity") {
-              print("unity ka");
-              if (!mounted) return;
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return const Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: Center(child: CircularProgressIndicator()));
-                  });
+                    // ✅ Call again once loaded
+                    await LevelPlayService().showRewardedAd(
+                      onRewardGranted: () async {
+                        await addToDb();
+                      },
+                      showProgressDialog: () {},
+                    );
+                  }
+                }
+              });
+            },
+          );
+          // widget.adService.showRewardedAd(onUserReward: () {
+          //   print("loaded and showing now");
+          //   addToDb();
+          // }, rewardStillLoading: (network) async {
+          //   if (network == "admob") {
+          //     print("admob ka");
+          //     if (!mounted) return;
+          //     showDialog(
+          //         context: context,
+          //         builder: (context) {
+          //           return const Dialog(
+          //               backgroundColor: Colors.transparent,
+          //               child: Center(child: CircularProgressIndicator()));
+          //         });
+          //     while (widget.adService.isRewardedLoaded) {
+          //       await Future.delayed(const Duration(milliseconds: 200));
+          //     }
+          //     if (mounted) Navigator.of(context).pop();
+          //     if (widget.adService.rewardedAd != null) {
+          //       widget.adService.showRewardedAd(onUserReward: () {
+          //         print("loaded and showing now");
 
-              while (widget.adService.isUnityLoading) {
-                await Future.delayed(const Duration(milliseconds: 200));
-              }
-              if (mounted) Navigator.of(context).pop();
-              if (widget.adService.isUnityLoaded) {
-                widget.adService.showRewardedAd(onUserReward: () {
-                  print("loaded and showing now");
-                  addToDb();
-                }); // 👈 now we can show
-              } else {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No ads available right now")),
-                );
-              }
-            }
-          }, ifFailed: () {
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text(
-                    "No Ads available at the moment, please try again later")));
-          });
+          //         addToDb();
+          //       }); // 👈 now we can show
+          //       widget.adService.rewardedAd = null;
+          //     } else {
+          //       if (!mounted) return;
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         const SnackBar(content: Text("No ads available right now")),
+          //       );
+          //     }
+          //   } else if (network == "unity") {
+          //     print("unity ka");
+          //     if (!mounted) return;
+          //     showDialog(
+          //         context: context,
+          //         builder: (context) {
+          //           return const Dialog(
+          //               backgroundColor: Colors.transparent,
+          //               child: Center(child: CircularProgressIndicator()));
+          //         });
+
+          //     while (widget.adService.isUnityLoading) {
+          //       await Future.delayed(const Duration(milliseconds: 200));
+          //     }
+          //     if (mounted) Navigator.of(context).pop();
+          //     if (widget.adService.isUnityLoaded) {
+          //       widget.adService.showRewardedAd(onUserReward: () {
+          //         print("loaded and showing now");
+          //         addToDb();
+          //       }); // 👈 now we can show
+          //     } else {
+          //       if (!mounted) return;
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         const SnackBar(content: Text("No ads available right now")),
+          //       );
+          //     }
+          //   }
+          // }, ifFailed: () {
+          //   if (!mounted) return;
+          //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //       content: Text(
+          //           "No Ads available at the moment, please try again later")));
+          // });
         },
         icon: const Icon(
           Icons.play_circle_fill,
@@ -552,7 +610,7 @@ class __pulsePlayState extends State<_pulsePlay>
     );
   }
 
-  void addToDb() async {
+  Future<void> addToDb() async {
     if (!mounted) return;
     Provider.of<AnalyticsProvider>(context, listen: false)
         .logEvent("reward_given", param: {"user_id": user!.user!.id});

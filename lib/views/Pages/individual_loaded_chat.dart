@@ -21,6 +21,7 @@ import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/ad_service.dart';
+import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/Services/resize_helper.dart';
 import 'package:match5/Services/socket_service.dart';
 import 'package:match5/const.dart';
@@ -94,8 +95,10 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
       if (widget.isItcomingFromMessagePage == false &&
           (widget.comingFromAd == false || widget.comingFromAd == null)) {
         print("hun chal ad");
-        AdService().showInterstitialAd();
+        //AdService().showInterstitialAd();
+        LevelPlayService().showInterstitial();
       } else {
+        LevelPlayService().showInterstitial();
         print("hje ni legenda");
       }
     });

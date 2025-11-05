@@ -16,6 +16,7 @@ import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/Services/ad_service.dart';
 import 'package:match5/Services/connectivity_service.dart';
+import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/Services/notification_service.dart';
 import 'package:match5/firebase_options.dart';
 import 'package:match5/utils/notification_message.dart';
@@ -59,8 +60,9 @@ void main() async {
     await NotificationService.localInit();
 
     //initialize admob
-    Future.delayed(const Duration(milliseconds: 300), () {
-      AdService().init();
+    Future.delayed(const Duration(milliseconds: 300), () async {
+      //AdService().init();
+      await LevelPlayService().init();
     });
 
     //iap subscription

@@ -2,6 +2,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+            maven { url "https://android-sdk.is.com/" }     // ironSource
+    maven { url "https://maven.facebook.com" }      // Meta FAN
     }
 }
 

@@ -10,6 +10,7 @@ import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/Services/ad_service.dart';
+import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/utils/reward_%20model.dart';
 import 'package:match5/utils/reward_card.dart';
@@ -46,7 +47,8 @@ class _WalletPageState extends State<WalletPage> {
     if (!mounted) return;
     user = Provider.of<UserProvider>(context, listen: false);
     iapService.setUserProvider(user!);
-    AdService().loadRewardedAd();
+    //AdService().loadRewardedAd();
+    initiateRewardAd();
   }
 
   @override
@@ -194,7 +196,7 @@ class _WalletPageState extends State<WalletPage> {
                         .logEvent("individual_chat_page", param: {
                       "user_id": user!.user!.id,
                     });
-                    _showRewardedAd();
+                    showRewardedAd();
                   }
                 },
                 child: RewardCard(
@@ -236,12 +238,10 @@ class _WalletPageState extends State<WalletPage> {
     });
   }
 
-  void _showRewardedAd() {
-    AdService().showRewardedAd(onUserReward: () {
-      print("loaded and showing now");
+  void showRewardedAd() {
+    LevelPlayService().showRewardedAd(onRewardGranted: () {
       addToDb();
-    }, rewardStillLoading: (network) async {
-      if (!mounted) return;
+    }, showProgressDialog: () async {
       showDialog(
         context: context,
         barrierDismissible: false, // user can't dismiss manually
@@ -249,20 +249,54 @@ class _WalletPageState extends State<WalletPage> {
           child: CircularProgressIndicator(color: Colors.yellow),
         ),
       );
-      while (AdService().isRewardedLoaded || AdService().isUnityLoading) {
-        await Future.delayed(const Duration(milliseconds: 300));
-      }
-      if (!mounted) return;
-      Navigator.pop(context);
-      AdService().showRewardedAd(onUserReward: () {
-        print("loaded and showing now");
-        addToDb();
+      LevelPlayService().hasRewardedLoadBegin.addListener(() async {
+        if (LevelPlayService().hasRewardedLoadBegin.value == false) {
+          if (mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop(); // pop the loader
+
+            // ✅ Call again once loaded
+            await LevelPlayService().showRewardedAd(
+              onRewardGranted: () async {
+                await addToDb();
+              },
+              showProgressDialog: () {},
+            );
+          }
+        }
       });
-    }, ifFailed: () {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content:
-              Text("No Ads available at the moment, please try again later")));
+    });
+    // AdService().showRewardedAd(onUserReward: () {
+    //   print("loaded and showing now");
+    //   addToDb();
+    // }, rewardStillLoading: (network) async {
+    //   if (!mounted) return;
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false, // user can't dismiss manually
+    //     builder: (context) => const Center(
+    //       child: CircularProgressIndicator(color: Colors.yellow),
+    //     ),
+    //   );
+    //   while (AdService().isRewardedLoaded || AdService().isUnityLoading) {
+    //     await Future.delayed(const Duration(milliseconds: 300));
+    //   }
+    //   if (!mounted) return;
+    //   Navigator.pop(context);
+    //   AdService().showRewardedAd(onUserReward: () {
+    //     print("loaded and showing now");
+    //     addToDb();
+    //   });
+    // }, ifFailed: () {
+    //   if (!mounted) return;
+    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+    //       content:
+    //           Text("No Ads available at the moment, please try again later")));
+    // });
+  }
+
+  void initiateRewardAd() {
+    LevelPlayService().loadRewardedAds(onRewardGranted: () {
+      addToDb();
     });
   }
 }
