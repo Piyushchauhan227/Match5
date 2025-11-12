@@ -202,4 +202,16 @@ class OnBoardConnection {
       print("error in decrementing $e");
     }
   }
+
+  Future<void> deleteUserAccount(id) async {
+    print("Deleting mare");
+    try {
+      var url = Uri.parse("$BASE_URL/user/deleteAccount");
+      var response = await http.delete(url, body: {"id": id});
+      var resData = jsonDecode(response.body);
+      print("deleting account $resData");
+    } catch (e) {
+      print("error in deleting account $e");
+    }
+  }
 }

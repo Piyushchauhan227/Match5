@@ -44,6 +44,29 @@ class _EditProfileState extends State<EditProfile> {
       appBar: AppBar(
         title: const Text("Edit Profile",
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        actions: [
+          PopupMenuButton(
+              onSelected: (value) {},
+              itemBuilder: (BuildContext context) {
+                return [
+                  PopupMenuItem(
+                      value: "Delete Account",
+                      child: TextButton.icon(
+                        onPressed: () {
+                          showDialogForDeletAccount();
+                        },
+                        label: Text(
+                          "Delete Account",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ),
+                      ))
+                ];
+              })
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -251,7 +274,7 @@ class _EditProfileState extends State<EditProfile> {
                     )
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -308,9 +331,69 @@ class _EditProfileState extends State<EditProfile> {
         });
   }
 
+  void showDialogForDeletAccount() {
+    Widget ok = ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            shape: StadiumBorder(),
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+        onPressed: () async {
+          //delet all the users info here from shareprefs like tokens,userinfo,delete from mongo db then firebase storage
+
+          //delete all the shared preferences
+          var prefs = await SharedPreferences.getInstance();
+          await prefs.clear();
+          signOutFromFirebase();
+
+          deleteUserAccount();
+
+          if (Navigator.canPop(context)) ;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => SplashScreen()),
+            (Route<dynamic> route) => false,
+          );
+        },
+        child: Text("Delete Account"));
+
+    Widget cancel = ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          shape: StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        child: Text("Cancel"));
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              "Delete Account",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              'This action is permanent and cannot be undone.\n\n'
+              'All your data, chats, and profile information will be permanently deleted.',
+            ),
+            // actionsAlignment: MainAxisAlignment.spaceEvenly,
+            actions: [cancel, ok],
+          );
+        });
+  }
+
   void signOutFromFirebase() async {
     await FirebaseMessaging.instance.deleteToken();
     await OnBoardConnection().deletFcmTokens(widget.user!.id);
     await AuthService().signOutFromGoogle();
+  }
+
+  void deleteUserAccount() async {
+    print("chki Delete");
+    await OnBoardConnection().deleteUserAccount(widget.user!.id);
   }
 }

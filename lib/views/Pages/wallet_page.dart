@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:match5/Database/api/user_api.dart';
 import 'package:match5/Models/user_model.dart';
@@ -28,7 +27,7 @@ class WalletPage extends StatefulWidget {
 class _WalletPageState extends State<WalletPage> {
   final IapService iapService = IapService();
   List<ProductDetails>? products;
-  RewardedAd? _rewardedAd;
+  //RewardedAd? _rewardedAd;
   bool isAdLoaded = false;
   UserProvider? user;
   bool isUnityLoaded = false;
@@ -53,7 +52,7 @@ class _WalletPageState extends State<WalletPage> {
 
   @override
   void dispose() {
-    _rewardedAd?.dispose();
+    //_rewardedAd?.dispose();
     super.dispose();
   }
 

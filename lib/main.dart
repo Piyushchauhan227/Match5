@@ -8,7 +8,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Provider/notification_provider.dart';
@@ -79,8 +78,6 @@ void main() async {
   }, (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
   });
-
-  await iapService.initialize();
 }
 
 class MainApp extends StatefulWidget {
@@ -97,6 +94,10 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    Firebase.initializeApp().then((_) async {
+      await iapService.initialize();
+    });
 
     //on background notification tapped
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -200,21 +201,41 @@ class _MainAppState extends State<MainApp> {
       switch (payload["type"]) {
         case "chat":
           try {
-            Future.delayed(Duration(seconds: 1), () {
-              var tokens = List<String>.from(jsonDecode(payload["tokens"]));
+            // ✅ Safely decode tokens
+            final tokenString = payload["tokens"];
+            final tokens = tokenString != null
+                ? List<String>.from(jsonDecode(tokenString))
+                : <String>[];
+
+            // ✅ Guard against null values before navigation
+            final username = payload["username"] ?? '';
+            final otherUserId = payload["otherUserId"] ?? '';
+            final myId = payload["myId"] ?? '';
+            final profilePic = payload["profilePic"] ?? '';
+            final isBot = payload["isBot"] ?? false;
+
+            if (otherUserId.isEmpty || myId.isEmpty) {
+              print("❌ Missing user IDs in chat notification payload.");
+              return;
+            }
+
+            Future.delayed(const Duration(seconds: 1), () {
               navigatorKey.currentState!.push(MaterialPageRoute(
-                  builder: (builder) => IndividualLoadedChat(
-                        username: payload["username"],
-                        OtherUserId: payload["otherUserId"],
-                        myId: payload["myId"],
-                        profilePic: payload["profilePic"],
-                        isBot: payload["isBot"],
-                        token: tokens,
-                        isItcomingFromMessagePage: false,
-                        comingFromAd: true,
-                      )));
+                builder: (_) => IndividualLoadedChat(
+                  username: username,
+                  OtherUserId: otherUserId,
+                  myId: myId,
+                  profilePic: profilePic,
+                  isBot: isBot,
+                  token: tokens,
+                  isItcomingFromMessagePage: false,
+                  comingFromAd: true,
+                ),
+              ));
             });
-          } catch (e) {
+          } catch (e, st) {
+            FirebaseCrashlytics.instance
+                .recordError(e, st, reason: 'Chat push payload parsing failed');
             print("⚠️ Error parsing chat payload: $e");
           }
           break;

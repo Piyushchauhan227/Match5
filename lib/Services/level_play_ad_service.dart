@@ -25,7 +25,7 @@ class LevelPlayService extends LevelPlayInitListener {
     final appKey = LEVEL_KEY_ANDROID;
     //final userId = '[YOUR_USER_ID]';
     try {
-      LevelPlay.setAdaptersDebug(true);
+      // LevelPlay.setAdaptersDebug(true);
       List<AdFormat> legacyAdFormats = [
         AdFormat.BANNER,
         AdFormat.REWARDED,
@@ -35,6 +35,7 @@ class LevelPlayService extends LevelPlayInitListener {
       final initRequest = LevelPlayInitRequest.builder(appKey)
           .withLegacyAdFormats(legacyAdFormats)
           .build();
+      await LevelPlay.setConsent(true);
       await LevelPlay.init(initRequest: initRequest, initListener: this);
     } on PlatformException catch (e) {
       print(e);

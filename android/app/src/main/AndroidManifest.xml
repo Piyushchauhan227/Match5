@@ -35,25 +35,21 @@ xmlns:tools="http://schemas.android.com/tools">
         android:requestLegacyExternalStorage="true"
         android:theme="@style/LaunchTheme">
 
-
-       <meta-data
-    android:name="com.facebook.sdk.ApplicationId"
-    android:value="1397807038629209"/>
-
-<meta-data
-    android:name="com.facebook.ads.AD_MANAGER_APP"
-    android:value="true"/>
-
-        <meta-data
+<!--Facebook ad network-->
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+        
+        
+          <meta-data
     android:name="com.google.android.gms.ads.APPLICATION_ID"
     android:value="ca-app-pub-5991331658109394~8260011508"/>
 
-      <activity
-        android:name="com.facebook.ads.AudienceNetworkActivity"
-        tools:replace="android:configChanges"
-        android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout" />   <!-- ✅ final version -->
 
-        
+        <activity
+            android:name="com.facebook.ads.AudienceNetworkActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
+            tools:replace="android:configChanges" />
+
+
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
