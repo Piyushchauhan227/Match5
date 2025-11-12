@@ -46,8 +46,8 @@ class _WalletPageState extends State<WalletPage> {
     if (!mounted) return;
     user = Provider.of<UserProvider>(context, listen: false);
     iapService.setUserProvider(user!);
-    //AdService().loadRewardedAd();
-    initiateRewardAd();
+    AdService().loadRewardedAd();
+    //initiateRewardAd();
   }
 
   @override
@@ -238,37 +238,9 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   void showRewardedAd() {
-    LevelPlayService().showRewardedAd(onRewardGranted: () {
-      addToDb();
-    }, showProgressDialog: () async {
-      showDialog(
-        context: context,
-        barrierDismissible: false, // user can't dismiss manually
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Colors.yellow),
-        ),
-      );
-      LevelPlayService().hasRewardedLoadBegin.addListener(() async {
-        if (LevelPlayService().hasRewardedLoadBegin.value == false) {
-          if (mounted && Navigator.of(context).canPop()) {
-            Navigator.of(context).pop(); // pop the loader
-
-            // ✅ Call again once loaded
-            await LevelPlayService().showRewardedAd(
-              onRewardGranted: () async {
-                await addToDb();
-              },
-              showProgressDialog: () {},
-            );
-          }
-        }
-      });
-    });
-    // AdService().showRewardedAd(onUserReward: () {
-    //   print("loaded and showing now");
+    // LevelPlayService().showRewardedAd(onRewardGranted: () {
     //   addToDb();
-    // }, rewardStillLoading: (network) async {
-    //   if (!mounted) return;
+    // }, showProgressDialog: () async {
     //   showDialog(
     //     context: context,
     //     barrierDismissible: false, // user can't dismiss manually
@@ -276,26 +248,54 @@ class _WalletPageState extends State<WalletPage> {
     //       child: CircularProgressIndicator(color: Colors.yellow),
     //     ),
     //   );
-    //   while (AdService().isRewardedLoaded || AdService().isUnityLoading) {
-    //     await Future.delayed(const Duration(milliseconds: 300));
-    //   }
-    //   if (!mounted) return;
-    //   Navigator.pop(context);
-    //   AdService().showRewardedAd(onUserReward: () {
-    //     print("loaded and showing now");
-    //     addToDb();
-    //   });
-    // }, ifFailed: () {
-    //   if (!mounted) return;
-    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-    //       content:
-    //           Text("No Ads available at the moment, please try again later")));
-    // });
-  }
+    //   LevelPlayService().hasRewardedLoadBegin.addListener(() async {
+    //     if (LevelPlayService().hasRewardedLoadBegin.value == false) {
+    //       if (mounted && Navigator.of(context).canPop()) {
+    //         Navigator.of(context).pop(); // pop the loader
 
-  void initiateRewardAd() {
-    LevelPlayService().loadRewardedAds(onRewardGranted: () {
+    //         // ✅ Call again once loaded
+    //         await LevelPlayService().showRewardedAd(
+    //           onRewardGranted: () async {
+    //             await addToDb();
+    //           },
+    //           showProgressDialog: () {},
+    //         );
+    //       }
+    //     }
+    //   });
+    // });
+    AdService().showRewardedAd(onUserReward: () {
+      print("loaded and showing now");
       addToDb();
+    }, rewardStillLoading: (network) async {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false, // user can't dismiss manually
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Colors.yellow),
+        ),
+      );
+      while (AdService().isRewardedLoaded || AdService().isUnityLoading) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      AdService().showRewardedAd(onUserReward: () {
+        print("loaded and showing now");
+        addToDb();
+      });
+    }, ifFailed: () {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text("No Ads available at the moment, please try again later")));
     });
   }
+
+  // void initiateRewardAd() {
+  //   LevelPlayService().loadRewardedAds(onRewardGranted: () {
+  //     addToDb();
+  //   });
+  // }
 }

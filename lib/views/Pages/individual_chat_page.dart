@@ -111,8 +111,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("in here mae");
-      //AdService().loadInterstitialAd();
-      LevelPlayService().loadInterstitial();
+      AdService().loadInterstitialAd();
+      //LevelPlayService().loadInterstitial();
       Provider.of<AnalyticsProvider>(context, listen: false)
           .logEvent("individual_chat_page", param: {
         "user_id": userModel!.id,

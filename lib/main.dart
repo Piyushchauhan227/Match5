@@ -60,8 +60,8 @@ void main() async {
 
     //initialize admob
     Future.delayed(const Duration(milliseconds: 300), () async {
-      //AdService().init();
-      await LevelPlayService().init();
+      await AdService().init();
+      //await LevelPlayService().init();
     });
 
     //iap subscription
