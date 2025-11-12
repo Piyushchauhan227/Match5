@@ -98,6 +98,7 @@ class _IndividualLoadedChatState extends State<IndividualLoadedChat>
         //LevelPlayService().showInterstitial();
       } else {
         //LevelPlayService().showInterstitial();
+        //AdService().showInterstitialAd();
         print("hje ni legenda");
       }
     });
