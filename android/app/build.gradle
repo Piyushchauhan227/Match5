@@ -71,26 +71,25 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
     
     //implementation "com.unity3d.ads:unity-ads:4.16.1"
-    //implementation "com.google.ads.mediation:unity:4.16.1.0" 
+    implementation "com.google.ads.mediation:unity:4.16.1.0" 
 
     //crashlytics
     implementation 'com.google.firebase:firebase-crashlytics:19.2.1'
     implementation 'com.google.firebase:firebase-analytics:22.1.2'
 
     //fb sdk
+    implementation 'com.facebook.android:facebook-core:16.2.0'
     implementation 'com.facebook.android:audience-network-sdk:6.20.0'
 
-    implementation 'com.ironsource.adapters:unityadsadapter:4.3.40'     // Unity adapter
-    implementation 'com.ironsource.adapters:facebookadapter:4.3.51'     // Meta (FAN) adapter
-    // If you want AdMob as fallback through LevelPlay:
-    implementation 'com.ironsource.adapters:admobadapter:4.3.42'
-
+   
      implementation 'com.google.android.gms:play-services-appset:16.0.2'
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
     implementation 'com.google.android.gms:play-services-basement:18.3.0'
 
     //fb-proguard-error
     implementation 'com.facebook.infer.annotation:infer-annotation:0.18.0'
+
+
     
 }
 

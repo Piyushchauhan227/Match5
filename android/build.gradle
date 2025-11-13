@@ -4,6 +4,7 @@ allprojects {
         mavenCentral()
             maven { url "https://android-sdk.is.com/" }     // ironSource
     maven { url "https://maven.facebook.com/android" }      // Meta FAN
+     maven { url 'https://jitpack.io' } 
     }
 }
 

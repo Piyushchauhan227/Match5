@@ -37,12 +37,19 @@ xmlns:tools="http://schemas.android.com/tools">
 
 <!--Facebook ad network-->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-        
+       
+<provider
+    android:authorities="com.facebook.app.FacebookContentProvider827558106578659"
+    android:name="com.facebook.FacebookContentProvider"
+    android:exported="true" />
         
           <meta-data
     android:name="com.google.android.gms.ads.APPLICATION_ID"
     android:value="ca-app-pub-5991331658109394~8260011508"/>
 
+<meta-data
+    android:name="com.bytedance.sdk.openadsdk.APPID"
+    android:value="7565742747115028487" />
 
         <activity
             android:name="com.facebook.ads.AudienceNetworkActivity"

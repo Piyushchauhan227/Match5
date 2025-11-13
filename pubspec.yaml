@@ -69,7 +69,8 @@ dependencies:
   unity_ads_plugin: ^0.3.27
   flutter_timezone: ^5.0.0
   google_mobile_ads: ^5.1.0
-
+  facebook_app_events: ^0.21.0
+  tiktok_events_sdk: ^1.1.1
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,6 +18,7 @@ import 'package:match5/Services/ad_service.dart';
 import 'package:match5/Services/connectivity_service.dart';
 import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/Services/notification_service.dart';
+import 'package:match5/const.dart';
 import 'package:match5/firebase_options.dart';
 import 'package:match5/utils/notification_message.dart';
 import 'package:match5/views/Pages/individual_loaded_chat.dart';
@@ -24,6 +26,7 @@ import 'package:match5/views/Pages/navbar/messages_page.dart';
 import 'package:match5/views/Pages/no_internet_screen.dart';
 import 'package:match5/views/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:tiktok_events_sdk/tiktok_events_sdk.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -64,7 +67,26 @@ void main() async {
       //await LevelPlayService().init();
     });
 
-    //iap subscription
+//tiktok
+
+// Android options example
+    final androidOptions = TikTokAndroidOptions(
+      disableAutoStart: false,
+      enableAutoIapTrack: true, // enable IAP tracking
+      disableAdvertiserIDCollection: false,
+    );
+
+    await TikTokEventsSdk.initSdk(
+      androidAppId: TIKTOKAPP,
+      tikTokAndroidId: TIKTOKAPP,
+      iosAppId: '',
+      tiktokIosId: '',
+      isDebugMode: false,
+      logLevel: TikTokLogLevel.debug,
+      androidOptions: androidOptions,
+    );
+
+    //await fbAppEvents.int
 
     runApp(MultiProvider(
       providers: [
