@@ -13,6 +13,8 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url "https://maven.facebook.com/android" }      // Meta FAN
+        maven { url 'https://jitpack.io' }
     }
 }
 

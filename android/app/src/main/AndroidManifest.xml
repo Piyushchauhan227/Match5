@@ -4,6 +4,7 @@ xmlns:tools="http://schemas.android.com/tools">
         android:name="android.permission.INTERNET"/>
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"/>
+        <uses-permission android:name="android.permission.AD_ID"/>
 
         <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission
@@ -28,6 +29,7 @@ xmlns:tools="http://schemas.android.com/tools">
         android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -37,19 +39,43 @@ xmlns:tools="http://schemas.android.com/tools">
 
 <!--Facebook ad network-->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-       
-<provider
+
+
+<meta-data
+    android:name="com.facebook.sdk.ClientToken"
+    android:value="b6aeeb34c025736eab3127a459d9c453" />
+
+<meta-data
+    android:name="com.facebook.sdk.AutoInitEnabled"
+    android:value="true" />
+
+<meta-data
+    android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
+    android:value="true" />
+
+<meta-data
+    android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled"
+    android:value="true" />
+
+    <provider
     android:authorities="com.facebook.app.FacebookContentProvider827558106578659"
     android:name="com.facebook.FacebookContentProvider"
     android:exported="true" />
+
+    <!--faebook end-->
+
+       
+<!--tiktok-->
+  <meta-data
+    android:name="com.tiktok.events.sdk.APP_ID"
+    android:value="7565742747115028487" />
+
+    <!--google-->
         
           <meta-data
     android:name="com.google.android.gms.ads.APPLICATION_ID"
     android:value="ca-app-pub-5991331658109394~8260011508"/>
 
-<meta-data
-    android:name="com.bytedance.sdk.openadsdk.APPID"
-    android:value="7565742747115028487" />
 
         <activity
             android:name="com.facebook.ads.AudienceNetworkActivity"

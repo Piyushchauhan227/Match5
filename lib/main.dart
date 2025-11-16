@@ -29,6 +29,7 @@ import 'package:provider/provider.dart';
 import 'package:tiktok_events_sdk/tiktok_events_sdk.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+final facebookAppEvents = FacebookAppEvents();
 
 Future _firebaseBackgroundMessage(RemoteMessage message) async {
   if (message.notification != null) {
@@ -42,6 +43,23 @@ void main() async {
   //initializing app
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
+    //tiktok
+// Android options example
+    final androidOptions = TikTokAndroidOptions(
+      disableAutoStart: false,
+      enableAutoIapTrack: true, // enable IAP tracking
+      disableAdvertiserIDCollection: false,
+    );
+    await TikTokEventsSdk.initSdk(
+      androidAppId: "com.ray.match5",
+      tikTokAndroidId: "7565742747115028487",
+      iosAppId: '',
+      tiktokIosId: '',
+      isDebugMode: false,
+      logLevel: TikTokLogLevel.debug,
+      androidOptions: androidOptions,
+    );
 
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
 
@@ -67,26 +85,7 @@ void main() async {
       //await LevelPlayService().init();
     });
 
-//tiktok
-
-// Android options example
-    final androidOptions = TikTokAndroidOptions(
-      disableAutoStart: false,
-      enableAutoIapTrack: true, // enable IAP tracking
-      disableAdvertiserIDCollection: false,
-    );
-
-    await TikTokEventsSdk.initSdk(
-      androidAppId: TIKTOKAPP,
-      tikTokAndroidId: TIKTOKAPP,
-      iosAppId: '',
-      tiktokIosId: '',
-      isDebugMode: false,
-      logLevel: TikTokLogLevel.debug,
-      androidOptions: androidOptions,
-    );
-
-    //await fbAppEvents.int
+    await facebookAppEvents.setAdvertiserTracking(enabled: true);
 
     runApp(MultiProvider(
       providers: [
