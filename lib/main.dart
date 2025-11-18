@@ -15,18 +15,14 @@ import 'package:match5/Provider/notification_provider.dart';
 import 'package:match5/Provider/user_provider.dart';
 import 'package:match5/Services/IAP_service.dart';
 import 'package:match5/Services/ad_service.dart';
+import 'package:match5/Services/appodeal_service.dart';
 import 'package:match5/Services/connectivity_service.dart';
-import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/Services/notification_service.dart';
-import 'package:match5/const.dart';
 import 'package:match5/firebase_options.dart';
-import 'package:match5/utils/notification_message.dart';
 import 'package:match5/views/Pages/individual_loaded_chat.dart';
-import 'package:match5/views/Pages/navbar/messages_page.dart';
 import 'package:match5/views/Pages/no_internet_screen.dart';
 import 'package:match5/views/splash_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:tiktok_events_sdk/tiktok_events_sdk.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final facebookAppEvents = FacebookAppEvents();
@@ -46,20 +42,20 @@ void main() async {
 
     //tiktok
 // Android options example
-    final androidOptions = TikTokAndroidOptions(
-      disableAutoStart: false,
-      enableAutoIapTrack: true, // enable IAP tracking
-      disableAdvertiserIDCollection: false,
-    );
-    await TikTokEventsSdk.initSdk(
-      androidAppId: "com.ray.match5",
-      tikTokAndroidId: "7565742747115028487",
-      iosAppId: '',
-      tiktokIosId: '',
-      isDebugMode: false,
-      logLevel: TikTokLogLevel.debug,
-      androidOptions: androidOptions,
-    );
+    // final androidOptions = TikTokAndroidOptions(
+    //   disableAutoStart: false,
+    //   enableAutoIapTrack: true, // enable IAP tracking
+    //   disableAdvertiserIDCollection: false,
+    // );
+    // await TikTokEventsSdk.initSdk(
+    //   androidAppId: "com.ray.match5",
+    //   tikTokAndroidId: "7565742747115028487",
+    //   iosAppId: '',
+    //   tiktokIosId: '',
+    //   isDebugMode: false,
+    //   logLevel: TikTokLogLevel.debug,
+    //   androidOptions: androidOptions,
+    // );
 
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
 
@@ -81,8 +77,9 @@ void main() async {
 
     //initialize admob
     Future.delayed(const Duration(milliseconds: 300), () async {
-      await AdService().init();
+      //await AdService().init();
       //await LevelPlayService().init();
+      await AppoDealService().init();
     });
 
     await facebookAppEvents.setAdvertiserTracking(enabled: true);

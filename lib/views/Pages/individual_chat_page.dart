@@ -14,6 +14,7 @@ import 'package:match5/Models/message_model.dart';
 import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Services/ad_service.dart';
+import 'package:match5/Services/appodeal_service.dart';
 import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/questions.dart';
@@ -111,8 +112,9 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("in here mae");
-      AdService().loadInterstitialAd();
+      //AdService().loadInterstitialAd();
       //LevelPlayService().loadInterstitial();
+      AppoDealService().loadInterstitial();
       Provider.of<AnalyticsProvider>(context, listen: false)
           .logEvent("individual_chat_page", param: {
         "user_id": userModel!.id,

@@ -15,6 +15,7 @@ pluginManagement {
         gradlePluginPortal()
         maven { url "https://maven.facebook.com/android" }      // Meta FAN
         maven { url 'https://jitpack.io' }
+        maven { url "https://artifactory.appodeal.com/appodeal"}
     }
 }
 

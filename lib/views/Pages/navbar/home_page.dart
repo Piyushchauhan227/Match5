@@ -6,6 +6,7 @@ import 'package:match5/Models/user_model.dart';
 import 'package:match5/Provider/analytics_provider.dart';
 import 'package:match5/Provider/message_list_provider.dart';
 import 'package:match5/Services/ad_service.dart';
+import 'package:match5/Services/appodeal_service.dart';
 import 'package:match5/Services/level_play_ad_service.dart';
 import 'package:match5/const.dart';
 import 'package:match5/main.dart';
@@ -17,6 +18,7 @@ import 'package:match5/utils/main_screen_card.dart';
 import 'package:match5/views/Pages/wallet_page.dart';
 import 'package:provider/provider.dart';
 import 'package:match5/Provider/user_provider.dart';
+import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class HomePage extends StatefulWidget {
@@ -47,8 +49,9 @@ class _HomePageState extends State<HomePage> {
 
   String? fcmToken = "";
   String? deviceId = "";
-  AdService adService = AdService();
+  //AdService adService = AdService();
   //LevelPlayService adService = LevelPlayService();
+  AppoDealService appoDealService = AppoDealService();
 
   @override
   void initState() {
@@ -371,7 +374,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 30),
                   _pulsePlay(
-                    adService: adService,
+                    appoDealService: appoDealService,
                   ),
                   SizedBox(
                     height: 15,
@@ -412,7 +415,8 @@ class _HomePageState extends State<HomePage> {
     // adService.loadRewardedAds(onRewardGranted: () async {
     //   await addToDb();
     // });
-    adService.loadInterstitialAd();
+    //adService.loadInterstitialAd();
+    await AppoDealService().loadRewarded();
   }
 
   Future<void> addToDb() async {
@@ -440,10 +444,11 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _pulsePlay extends StatefulWidget {
-  const _pulsePlay({required this.adService, super.key});
+  const _pulsePlay({required this.appoDealService, super.key});
 
   //final LevelPlayService adService;
-  final AdService adService;
+  //final AdService adService;
+  final AppoDealService appoDealService;
 
   @override
   State<_pulsePlay> createState() => __pulsePlayState();
@@ -528,69 +533,85 @@ class __pulsePlayState extends State<_pulsePlay>
           //     });
           //   },
           // );
-          widget.adService.showRewardedAd(onUserReward: () {
-            print("loaded and showing now");
-            addToDb();
-          }, rewardStillLoading: (network) async {
-            if (network == "admob") {
-              print("admob ka");
-              if (!mounted) return;
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return const Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: Center(child: CircularProgressIndicator()));
-                  });
-              while (widget.adService.isRewardedLoaded) {
-                await Future.delayed(const Duration(milliseconds: 200));
-              }
-              if (mounted) Navigator.of(context).pop();
-              if (widget.adService.rewardedAd != null) {
-                widget.adService.showRewardedAd(onUserReward: () {
-                  print("loaded and showing now");
+          // widget.adService.showRewardedAd(onUserReward: () {
+          //   print("loaded and showing now");
+          //   addToDb();
+          // }, rewardStillLoading: (network) async {
+          //   if (network == "admob") {
+          //     print("admob ka");
+          //     if (!mounted) return;
+          //     showDialog(
+          //         context: context,
+          //         builder: (context) {
+          //           return const Dialog(
+          //               backgroundColor: Colors.transparent,
+          //               child: Center(child: CircularProgressIndicator()));
+          //         });
+          //     while (widget.adService.isRewardedLoaded) {
+          //       await Future.delayed(const Duration(milliseconds: 200));
+          //     }
+          //     if (mounted) Navigator.of(context).pop();
+          //     if (widget.adService.rewardedAd != null) {
+          //       widget.adService.showRewardedAd(onUserReward: () {
+          //         print("loaded and showing now");
 
-                  addToDb();
-                }); // 👈 now we can show
-                widget.adService.rewardedAd = null;
-              } else {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No ads available right now")),
-                );
-              }
-            } else if (network == "unity") {
-              print("unity ka");
-              if (!mounted) return;
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return const Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: Center(child: CircularProgressIndicator()));
-                  });
+          //         addToDb();
+          //       }); // 👈 now we can show
+          //       widget.adService.rewardedAd = null;
+          //     } else {
+          //       if (!mounted) return;
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         const SnackBar(content: Text("No ads available right now")),
+          //       );
+          //     }
+          //   } else if (network == "unity") {
+          //     print("unity ka");
+          //     if (!mounted) return;
+          //     showDialog(
+          //         context: context,
+          //         builder: (context) {
+          //           return const Dialog(
+          //               backgroundColor: Colors.transparent,
+          //               child: Center(child: CircularProgressIndicator()));
+          //         });
 
-              while (widget.adService.isUnityLoading) {
-                await Future.delayed(const Duration(milliseconds: 200));
-              }
-              if (mounted) Navigator.of(context).pop();
-              if (widget.adService.isUnityLoaded) {
-                widget.adService.showRewardedAd(onUserReward: () {
-                  print("loaded and showing now");
-                  addToDb();
-                }); // 👈 now we can show
-              } else {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No ads available right now")),
-                );
-              }
+          //     while (widget.adService.isUnityLoading) {
+          //       await Future.delayed(const Duration(milliseconds: 200));
+          //     }
+          //     if (mounted) Navigator.of(context).pop();
+          //     if (widget.adService.isUnityLoaded) {
+          //       widget.adService.showRewardedAd(onUserReward: () {
+          //         print("loaded and showing now");
+          //         addToDb();
+          //       }); // 👈 now we can show
+          //     } else {
+          //       if (!mounted) return;
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         const SnackBar(content: Text("No ads available right now")),
+          //       );
+          //     }
+          //   }
+          // }, ifFailed: () {
+          //   if (!mounted) return;
+          //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //       content: Text(
+          //           "No Ads available at the moment, please try again later")));
+          // });
+          widget.appoDealService.onRewardEarned = addToDb;
+          widget.appoDealService.showRewardedAd(stillLoading: () async {
+            showDialog(
+                context: context,
+                barrierDismissible: false, // user can't dismiss manually
+                builder: (context) => const Center(
+                      child: CircularProgressIndicator(color: Colors.yellow),
+                    ));
+            while (AppoDealService().isRewardReady) {
+              await Future.delayed(const Duration(milliseconds: 300));
             }
-          }, ifFailed: () {
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text(
-                    "No Ads available at the moment, please try again later")));
+            Navigator.pop(context);
+
+            await AppoDealService().showRewardedAd(stillLoading: () {});
           });
         },
         icon: const Icon(

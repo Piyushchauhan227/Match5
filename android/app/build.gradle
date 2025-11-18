@@ -39,6 +39,8 @@ android {
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        
     }
 
     signingConfigs {
@@ -87,9 +89,9 @@ implementation 'com.facebook.android:facebook-android-sdk:16.3.0'
 
     //fb-proguard-error
     implementation 'com.facebook.infer.annotation:infer-annotation:0.18.0'
-
-
     
+//tiktok
+// implementation("com.appodeal.ads:sdk:3.11.0.0")
 }
 
 
