@@ -52,7 +52,13 @@ class IapService {
           'fires299',
           'fires999'
         };
-        ProductDetailsResponse response = await _iap.queryProductDetails(ids);
+
+        final response = await _iap.queryProductDetails(ids);
+        print("Single test: ${response.productDetails.length}");
+        print("Error: ${response.error}");
+        print("Not found: ${response.notFoundIDs}");
+
+        //ProductDetailsResponse response = await _iap.queryProductDetails(ids);
         print("Products insidenahi ${response.productDetails}");
         products = response.productDetails;
 

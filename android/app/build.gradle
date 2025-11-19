@@ -98,6 +98,7 @@ implementation 'com.facebook.android:facebook-android-sdk:16.3.0'
 implementation("com.appodeal.ads:sdk:3.11.0.0") {
     // Optional redundancy – same as configurations.all
     exclude group: 'com.pangle.global', module: 'tiktok-business-android-sdk-comp'
+    exclude group: 'com.android.billingclient'
 }
 
 //multidex

@@ -23,6 +23,7 @@ import 'package:match5/views/Pages/individual_loaded_chat.dart';
 import 'package:match5/views/Pages/no_internet_screen.dart';
 import 'package:match5/views/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:tiktok_events_sdk/tiktok_events_sdk.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final facebookAppEvents = FacebookAppEvents();
@@ -42,20 +43,6 @@ void main() async {
 
     //tiktok
 // Android options example
-    // final androidOptions = TikTokAndroidOptions(
-    //   disableAutoStart: false,
-    //   enableAutoIapTrack: true, // enable IAP tracking
-    //   disableAdvertiserIDCollection: false,
-    // );
-    // await TikTokEventsSdk.initSdk(
-    //   androidAppId: "com.ray.match5",
-    //   tikTokAndroidId: "7565742747115028487",
-    //   iosAppId: '',
-    //   tiktokIosId: '',
-    //   isDebugMode: false,
-    //   logLevel: TikTokLogLevel.debug,
-    //   androidOptions: androidOptions,
-    // );
 
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
 
@@ -74,13 +61,6 @@ void main() async {
 
 //initialize local notifications
     await NotificationService.localInit();
-
-    //initialize admob
-    Future.delayed(const Duration(milliseconds: 300), () async {
-      //await AdService().init();
-      //await LevelPlayService().init();
-      await AppoDealService().init();
-    });
 
     await facebookAppEvents.setAdvertiserTracking(enabled: true);
 
@@ -113,9 +93,18 @@ class _MainAppState extends State<MainApp> {
     // TODO: implement initState
     super.initState();
 
-    Firebase.initializeApp().then((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       await iapService.initialize();
+
+      Future.delayed(const Duration(seconds: 3), () async {
+        //await AdService().init();
+        //await LevelPlayService().init();
+        await AppoDealService().init();
+        initTikTok();
+      });
     });
+
+    //initialize admob
 
     //on background notification tapped
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -272,5 +261,22 @@ class _MainAppState extends State<MainApp> {
           print("Unhandled notification type: ${payload["type"]}");
       }
     }
+  }
+
+  void initTikTok() async {
+    final androidOptions = TikTokAndroidOptions(
+      disableAutoStart: false,
+      enableAutoIapTrack: false, // IMPORTANT: TURN THIS OFF
+      disableAdvertiserIDCollection: false,
+    );
+    await TikTokEventsSdk.initSdk(
+      androidAppId: "com.ray.match5",
+      tikTokAndroidId: "7565742747115028487",
+      iosAppId: '',
+      tiktokIosId: '',
+      isDebugMode: false,
+      logLevel: TikTokLogLevel.debug,
+      androidOptions: androidOptions,
+    );
   }
 }
