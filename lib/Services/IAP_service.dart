@@ -41,17 +41,28 @@ class IapService {
 
   Future<void> initialize() async {
     available = await _iap.isAvailable();
-    print("Products inside  first");
+    print("Products inside  first $available");
     if (available) {
-      const ids = {'fires15', 'fires49', 'fires120', 'fires299', 'fires999'};
-      ProductDetailsResponse response = await _iap.queryProductDetails(ids);
-      print("Products inside ${response.productDetails}");
-      products = response.productDetails;
+      print(" Products iske");
+      try {
+        final Set<String> ids = {
+          'fires15',
+          'fires49',
+          'fires120',
+          'fires299',
+          'fires999'
+        };
+        ProductDetailsResponse response = await _iap.queryProductDetails(ids);
+        print("Products insidenahi ${response.productDetails}");
+        products = response.productDetails;
 
-      subscription?.cancel();
-      subscription = _iap.purchaseStream.listen(_handlePurchaseUpdate,
-          onError: (error) => print("purchase stream cancelled , $error"));
-      await consumeUnfinishedPurchases();
+        subscription?.cancel();
+        subscription = _iap.purchaseStream.listen(_handlePurchaseUpdate,
+            onError: (error) => print("purchase stream cancelled , $error"));
+        await consumeUnfinishedPurchases();
+      } catch (e) {
+        print("Products error $e");
+      }
     }
   }
 

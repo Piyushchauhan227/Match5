@@ -605,7 +605,7 @@ class __pulsePlayState extends State<_pulsePlay>
                 builder: (context) => const Center(
                       child: CircularProgressIndicator(color: Colors.yellow),
                     ));
-            while (AppoDealService().isRewardReady) {
+            while (AppoDealService().isRequesting) {
               await Future.delayed(const Duration(milliseconds: 300));
             }
             if (!mounted) return;

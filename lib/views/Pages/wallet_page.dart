@@ -304,7 +304,7 @@ class _WalletPageState extends State<WalletPage> {
             builder: (context) => const Center(
                   child: CircularProgressIndicator(color: Colors.yellow),
                 ));
-        while (AppoDealService().isRewardReady) {
+        while (AppoDealService().isRequesting) {
           await Future.delayed(const Duration(milliseconds: 300));
         }
         if (!mounted) return;

@@ -9,7 +9,7 @@ class AppoDealService {
 
   Function? onRewardEarned;
   bool isRewardReady = false;
-  bool _isRequesting = false;
+  bool isRequesting = false;
 
   Future<void> init() async {
     ConsentInformation.instance.reset();
@@ -42,24 +42,24 @@ class AppoDealService {
   }
 
   Future<void> loadRewarded() async {
-    if (_isRequesting) return;
-    _isRequesting = true;
+    if (isRequesting) return;
+    isRequesting = true;
     try {
       await Appodeal.cache(AppodealAdType.RewardedVideo);
       print("📦 Rewarded ad requested");
     } catch (e) {
       debugPrint("error loading rewarded ad");
-      _isRequesting = false;
+      isRequesting = false;
     }
   }
 
   Future<void> showRewardedAd({Function()? stillLoading}) async {
-    print("▶ requesting  ad $_isRequesting");
+    print("▶ requesting  ad $isRequesting");
     bool isLoaded = await Appodeal.isLoaded(AppodealAdType.RewardedVideo);
     if (isLoaded) {
       Appodeal.show(AppodealAdType.RewardedVideo);
       print("▶ Showing rewarded ad");
-    } else if (_isRequesting) {
+    } else if (isRequesting) {
       stillLoading?.call();
     } else {
       print("❌ Rewarded not loaded yet");
@@ -110,12 +110,12 @@ class AppoDealService {
       },
       onRewardedVideoLoaded: (bool isPrecache) {
         isRewardReady = true;
-        _isRequesting = false;
+        isRequesting = false;
         print("✅ Rewarded READY");
       },
       onRewardedVideoFailedToLoad: (error) {
         isRewardReady = false;
-        _isRequesting = false;
+        isRequesting = false;
         print("❌ Reward failed → $error");
       },
       onRewardedVideoClosed: (bool isPrecache) {

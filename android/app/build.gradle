@@ -65,7 +65,10 @@ android {
         }
     }
 }
-
+configurations.all {
+    // Only remove the extra "comp" TikTok business SDK that Pangle brings in
+    exclude group: 'com.pangle.global', module: 'tiktok-business-android-sdk-comp'
+}
 dependencies {
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
@@ -90,8 +93,11 @@ implementation 'com.facebook.android:facebook-android-sdk:16.3.0'
     //fb-proguard-error
     implementation 'com.facebook.infer.annotation:infer-annotation:0.18.0'
     
-//tiktok
-// implementation("com.appodeal.ads:sdk:3.11.0.0")
+//apodeal
+implementation("com.appodeal.ads:sdk:3.11.0.0") {
+    // Optional redundancy – same as configurations.all
+    exclude group: 'com.pangle.global', module: 'tiktok-business-android-sdk-comp'
+}
 }
 
 
